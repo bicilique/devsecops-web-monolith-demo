@@ -245,3 +245,8 @@ $RECYCLE.BIN/
 .ionide
 MiniCart_Admin_8_Phase_Roadmap_Fresh.md
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualbasic,visualstudiocode,node
+AGENTS.md
+
+.agents/**
+skills-lock.json
+data/*.sqlite

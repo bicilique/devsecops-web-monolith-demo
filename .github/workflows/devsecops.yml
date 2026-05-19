@@ -1,0 +1,130 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  devsecops:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run test suite
+        env:
+          SESSION_SECRET: ci-session-secret
+          ADMIN_PASSWORD: ci-admin-password
+        run: npm test
+
+      - name: Generate coverage
+        env:
+          SESSION_SECRET: ci-session-secret
+          ADMIN_PASSWORD: ci-admin-password
+        run: npm run test:coverage
+
+      - name: Run SonarQube scan
+        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Skip SonarQube scan when secrets are missing
+        if: ${{ secrets.SONAR_TOKEN == '' || secrets.SONAR_HOST_URL == '' }}
+        run: echo "Skipping SonarQube scan because SONAR_TOKEN or SONAR_HOST_URL is not configured."
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.24.0
+        continue-on-error: true
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          output: reports/trivy-fs.txt
+          exit-code: 0
+          ignore-unfixed: true
+          vuln-type: os,library
+
+      - name: Build Docker image
+        run: docker build -t minicart-admin:ci .
+
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@0.24.0
+        continue-on-error: true
+        with:
+          image-ref: minicart-admin:ci
+          format: table
+          output: reports/trivy-image.txt
+          exit-code: 0
+          ignore-unfixed: true
+          vuln-type: os,library
+
+      - name: Reset CI database
+        env:
+          SESSION_SECRET: ci-session-secret
+          ADMIN_PASSWORD: ci-admin-password
+          SQLITE_DB_PATH: /tmp/minicart-admin-ci.sqlite
+        run: npm run db:reset
+
+      - name: Start application
+        env:
+          PORT: 3000
+          SESSION_SECRET: ci-session-secret
+          ADMIN_PASSWORD: ci-admin-password
+          SQLITE_DB_PATH: /tmp/minicart-admin-ci.sqlite
+        run: |
+          nohup npm start > reports/app.log 2>&1 &
+          echo $! > reports/app.pid
+
+      - name: Wait for health endpoint
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl --fail --silent http://127.0.0.1:3000/health > /tmp/minicart-health.json; then
+              cat /tmp/minicart-health.json
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Health check did not become ready in time." >&2
+          exit 1
+
+      - name: Run ZAP baseline scan
+        continue-on-error: true
+        run: |
+          docker run --rm --network=host -v "$PWD/reports:/zap/wrk/:rw" ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py -t http://127.0.0.1:3000/ -I -r zap-report.html -w zap-report.md
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f reports/app.pid ]; then
+            kill "$(cat reports/app.pid)" || true
+          fi
+
+      - name: Upload CI artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: devsecops-reports
+          path: |
+            coverage/lcov.info
+            reports/trivy-fs.txt
+            reports/trivy-image.txt
+            reports/zap-report.html
+            reports/zap-report.md
+            reports/app.log

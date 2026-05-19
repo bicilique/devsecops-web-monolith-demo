@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-card dashboard-card">
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow">MiniCart Admin</p>
+            <h1>Dashboard</h1>
+            <p>Signed in as <strong><%= currentUser.username %></strong>.</p>
+          </div>
+          <form method="post" action="/logout">
+            <button class="secondary-button" type="submit">Log out</button>
+          </form>
+        </div>
+
+        <section class="metric-panel">
+          <span class="metric-label">Product count</span>
+          <strong class="metric-value"><%= productCount %></strong>
+          <div class="toolbar-actions toolbar-actions--compact toolbar-actions--metric">
+            <a class="secondary-button secondary-button--link" href="/admin/products">Browse products</a>
+            <a class="primary-button primary-button--link" href="/admin/products/new">Add product</a>
+          </div>
+        </section>
+
+        <section class="activity-panel">
+          <div class="section-heading">
+            <h2>Recent audit activity</h2>
+            <p>Latest 5 entries from <%= totalAuditLogCount %> total audit records.</p>
+          </div>
+          <ul class="activity-list">
+            <% auditLogs.forEach((entry) => { %>
+              <li>
+                <strong><%= entry.username %></strong>
+                <span><%= entry.action %></span>
+                <small><%= entry.entityType %>#<%= entry.entityId %></small>
+              </li>
+            <% }) %>
+          </ul>
+          <div class="toolbar-actions toolbar-actions--compact">
+            <a class="secondary-button secondary-button--link" href="/admin/audit-logs">View all audit logs</a>
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

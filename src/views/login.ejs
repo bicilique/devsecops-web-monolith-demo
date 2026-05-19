@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-card hero-card--narrow">
+        <p class="eyebrow">MiniCart Admin</p>
+        <h1>Administrator login</h1>
+        <p>Use seeded workshop credential to access dashboard.</p>
+        <% if (errorMessage) { %>
+          <div class="alert alert--error"><%= errorMessage %></div>
+        <% } %>
+        <form class="stack-form" method="post" action="/login">
+          <label class="form-field">
+            <span>Username</span>
+            <input type="text" name="username" autocomplete="username" required />
+          </label>
+          <label class="form-field">
+            <span>Password</span>
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary-button" type="submit">Sign in</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
