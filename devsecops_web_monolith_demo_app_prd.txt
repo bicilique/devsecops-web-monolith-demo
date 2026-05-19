@@ -1,0 +1,1705 @@
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+DevSecOps Web Monolith Demo App
+Practical SAST, SCA, Container Scanning, and DAST Training Target
+
+Version: 1.0
+Prepared for: DevSecOps Full-Day Workshop
+Audience: Beginner to Intermediate Developers / IT Students / Junior Engineers
+Authoring Perspective: Senior Software Engineer + Cybersecurity / DevSecOps Trainer
+
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+This document defines the requirements for a deliberately simple but realistic Web
+Monolith demo application used as the main target for a DevSecOps workshop.
+
+The application will simulate a small e-commerce admin system called:
+
+    MiniCart Admin
+
+The app allows an administrator to log in and manage products in a product catalog.
+It includes product creation, product listing, product search, product detail view,
+product image upload, and basic admin-only access.
+
+The main purpose of the app is not to become a production e-commerce system. The
+purpose is to become a controlled, educational target for demonstrating:
+
+- Secure and insecure coding practices
+- SAST using SonarQube
+- Dependency and container scanning using Trivy
+- DAST using OWASP ZAP
+- CI/CD security automation using GitHub Actions
+- Security gate concepts
+- Fix-and-rescan learning workflow
+
+The application should be easy to run locally, easy to understand, easy to break,
+and easy to fix. It should intentionally include vulnerable examples in a dedicated
+vulnerable branch or mode, while also providing a fixed version for comparison.
+
+
+================================================================================
+2. BACKGROUND AND PROBLEM STATEMENT
+================================================================================
+
+Modern software development is becoming faster because of CI/CD, AI-assisted coding,
+frameworks, reusable libraries, and containerized deployment. Developers can ship
+features quickly, but security validation is often forgotten or delayed until the end.
+
+In many beginner DevSecOps workshops, the biggest challenge is not explaining the
+tools. The biggest challenge is giving participants a realistic but simple application
+where security issues can be demonstrated clearly.
+
+Many intentionally vulnerable apps are too security-focused and feel unrealistic for
+developers. Other real applications are too complex for beginners. This demo app
+fills the gap by providing a realistic web monolith with familiar e-commerce features
+and carefully designed vulnerabilities.
+
+The app should help participants understand this message:
+
+    Code that works is not always code that is secure.
+
+By using a familiar product catalog admin use case, participants can easily connect
+security issues to real development behavior.
+
+
+================================================================================
+3. PRODUCT VISION
+================================================================================
+
+MiniCart Admin should become a reusable DevSecOps workshop target application that
+helps developers learn how to integrate security validation into a normal CI/CD
+workflow.
+
+The app should demonstrate security from the perspective of a working developer:
+
+- A developer writes code
+- The code is pushed to GitHub
+- GitHub Actions runs the pipeline
+- SonarQube checks the source code
+- Trivy checks dependencies and container images
+- OWASP ZAP checks the running application
+- Findings are reviewed and fixed
+- The pipeline runs again
+
+The product vision is to make DevSecOps understandable, practical, and memorable.
+
+
+================================================================================
+4. GOALS
+================================================================================
+
+4.1 Primary Goals
+
+1. Provide a simple web monolith application for DevSecOps training.
+2. Demonstrate SAST findings clearly using SonarQube.
+3. Demonstrate dependency and container scanning using Trivy.
+4. Demonstrate DAST findings clearly using OWASP ZAP.
+5. Provide intentionally vulnerable and fixed versions of the same application.
+6. Support GitHub Actions CI/CD workflow.
+7. Make the app easy to run locally using Docker Compose.
+8. Make the code easy to explain in a live workshop.
+9. Make vulnerabilities safe, controlled, and educational.
+10. Help participants understand how security automation fits into developer workflow.
+
+4.2 Secondary Goals
+
+1. Provide README instructions for instructors and participants.
+2. Provide optional seed data for repeatable demos.
+3. Provide simple unit tests for CI demonstration.
+4. Provide a simple pipeline that can be extended gradually.
+5. Provide troubleshooting notes for common workshop issues.
+6. Support both local demo and CI/CD demo modes.
+
+
+================================================================================
+5. NON-GOALS
+================================================================================
+
+This application is not intended to be:
+
+1. A real production e-commerce system.
+2. A scalable marketplace platform.
+3. A complex microservices architecture.
+4. A full authentication and authorization product.
+5. A payment system.
+6. A real customer-facing product.
+7. A highly optimized web application.
+8. A complete OWASP Top 10 training lab.
+9. A replacement for advanced vulnerable apps such as Juice Shop or WebGoat.
+
+The app should stay intentionally simple. Complexity should only be added when it
+helps the workshop learning objective.
+
+
+================================================================================
+6. TARGET USERS
+================================================================================
+
+6.1 Primary Users
+
+1. Workshop instructor
+   - Uses the app to demonstrate DevSecOps concepts.
+   - Runs scans live.
+   - Shows findings and fixes.
+   - Explains CI/CD security flow.
+
+2. Workshop participant
+   - Runs the app locally or through provided instructions.
+   - Reviews code and findings.
+   - Understands how vulnerabilities appear.
+   - Practices fixing simple issues.
+
+3. Junior developer / IT student
+   - Learns secure development workflow.
+   - Learns basic CI/CD and security scanning.
+   - Understands common vulnerabilities in familiar application features.
+
+6.2 User Skill Level
+
+The app should be understandable for:
+
+- Beginner developers with basic web development knowledge
+- Intermediate developers learning DevSecOps
+- IT students learning application security
+- Junior engineers learning CI/CD automation
+
+The app should not require deep prior security knowledge.
+
+
+================================================================================
+7. RECOMMENDED TECHNOLOGY STACK
+================================================================================
+
+7.1 Main Stack
+
+Backend:
+    Node.js + Express.js
+
+View Engine:
+    EJS
+
+Database:
+    SQLite
+
+Authentication:
+    Express session-based login
+
+File Upload:
+    Multer
+
+Containerization:
+    Docker + Docker Compose
+
+CI/CD:
+    GitHub Actions
+
+SAST:
+    SonarQube
+
+Dependency and Container Scanning:
+    Trivy
+
+DAST:
+    OWASP ZAP
+
+Package Manager:
+    npm
+
+7.2 Why This Stack
+
+Node.js + Express is recommended because:
+
+1. Easy for beginners to understand.
+2. Fast to set up.
+3. Common in modern web development.
+4. Easy to intentionally introduce and fix vulnerabilities.
+5. Works well with SonarQube, Trivy, and OWASP ZAP.
+6. Simple to containerize.
+7. Minimal boilerplate compared to heavier enterprise frameworks.
+
+SQLite is recommended because:
+
+1. No separate database server is required.
+2. Easy for local demo.
+3. Easy to reset and seed.
+4. Good enough for a monolith training app.
+
+EJS is recommended because:
+
+1. Easy to understand for server-side rendering.
+2. Makes XSS examples easy to demonstrate.
+3. Avoids frontend framework complexity.
+
+
+================================================================================
+8. HIGH-LEVEL APPLICATION CONCEPT
+================================================================================
+
+Application Name:
+    MiniCart Admin
+
+Application Type:
+    Web Monolith
+
+Main Scenario:
+    An admin manages products in a small e-commerce catalog.
+
+Core Features:
+
+1. Admin login
+2. Admin dashboard
+3. Add product
+4. Edit product
+5. View product list
+6. Search product
+7. View product detail
+8. Upload product image
+9. View audit log
+10. Health check endpoint
+
+Core Teaching Message:
+    A simple feature like "Add Product" can contain multiple security risks if
+    not validated properly.
+
+
+================================================================================
+9. USER STORIES
+================================================================================
+
+9.1 Authentication
+
+US-AUTH-001:
+As an admin, I want to log in to the admin dashboard so that I can manage products.
+
+Acceptance Criteria:
+- User can access /login page.
+- User can submit username and password.
+- Valid credentials create a session.
+- Invalid credentials show an error message.
+- Logged-in user can access admin pages.
+- Logged-out user cannot access admin pages.
+
+Security Teaching Points:
+- Hardcoded credentials
+- Weak password handling
+- Session cookie flags
+- Brute force behavior
+- Error message leakage
+
+US-AUTH-002:
+As an admin, I want to log out so that my session is destroyed.
+
+Acceptance Criteria:
+- User can click logout.
+- Session is destroyed.
+- User is redirected to login page.
+- Admin pages require login again.
+
+
+9.2 Product Management
+
+US-PROD-001:
+As an admin, I want to add a new product so that the product appears in the catalog.
+
+Acceptance Criteria:
+- Admin can open add product form.
+- Admin can enter name, description, price, and category.
+- Admin can upload a product image.
+- Product is saved in the database.
+- Product appears in product list.
+
+Security Teaching Points:
+- Input validation
+- Stored XSS
+- Unsafe file upload
+- SQL injection
+- Authorization checks
+
+US-PROD-002:
+As an admin, I want to edit product information so that I can update existing products.
+
+Acceptance Criteria:
+- Admin can open edit form for a product.
+- Admin can modify name, description, price, category, and image.
+- Changes are saved.
+- Updated product appears in product list.
+
+Security Teaching Points:
+- Authorization
+- Input validation
+- Stored XSS
+- Audit logging
+
+US-PROD-003:
+As an admin, I want to search products so that I can find products quickly.
+
+Acceptance Criteria:
+- Admin can enter a search keyword.
+- Matching products are displayed.
+- Empty search shows all products or a clear message.
+
+Security Teaching Points:
+- Reflected XSS
+- SQL injection
+- Unsafe query construction
+
+US-PROD-004:
+As an admin, I want to view product details so that I can inspect product data.
+
+Acceptance Criteria:
+- Admin can click a product.
+- Product detail page shows name, description, price, category, and image.
+
+Security Teaching Points:
+- Stored XSS
+- Output encoding
+- File path exposure
+
+
+9.3 Audit Log
+
+US-AUDIT-001:
+As an admin, I want product changes to be logged so that admin activity can be reviewed.
+
+Acceptance Criteria:
+- Add product action creates audit log entry.
+- Edit product action creates audit log entry.
+- Delete product action creates audit log entry if delete feature exists.
+- Audit log includes timestamp, action, and username.
+
+Security Teaching Points:
+- Audit trail
+- Incident investigation
+- Monitoring and operation
+
+
+9.4 Health Check
+
+US-HEALTH-001:
+As a developer or pipeline, I want a health check endpoint so that CI/CD and DAST
+tools can verify the app is running.
+
+Acceptance Criteria:
+- GET /health returns HTTP 200.
+- Response includes simple status value.
+- Endpoint does not expose sensitive information.
+
+Security Teaching Points:
+- Safe diagnostics
+- Avoiding information disclosure
+
+
+================================================================================
+10. FEATURE REQUIREMENTS
+================================================================================
+
+10.1 Login Page
+
+Route:
+    GET /login
+    POST /login
+
+Required Fields:
+- username
+- password
+
+Vulnerable Demo Version:
+- May use hardcoded admin credentials.
+- May use weak error messages.
+- May use insecure session cookie settings.
+
+Fixed Version:
+- Credentials stored securely using environment variables or seeded database user.
+- Generic login error message.
+- Secure session cookie configuration.
+- Optional basic login rate limiting.
+
+10.2 Dashboard
+
+Route:
+    GET /admin
+
+Requirements:
+- Only authenticated admin can access.
+- Show total products.
+- Show latest products.
+- Show latest audit logs.
+- Provide navigation to product management.
+
+Vulnerable Demo Version:
+- May miss proper authentication middleware on one admin route.
+
+Fixed Version:
+- All admin routes protected by authentication and authorization middleware.
+
+10.3 Product List
+
+Route:
+    GET /admin/products
+
+Requirements:
+- Show product list.
+- Show product name, price, category, and image.
+- Provide links to detail and edit pages.
+- Include search form.
+
+Security Requirement:
+- Output must be encoded safely in fixed version.
+
+10.4 Add Product
+
+Route:
+    GET /admin/products/new
+    POST /admin/products
+
+Fields:
+- name
+- description
+- price
+- category
+- image
+
+Vulnerable Demo Version:
+- Does not properly validate description.
+- Allows unsafe HTML/script in description.
+- Does not validate file type strictly.
+- May build SQL query unsafely.
+
+Fixed Version:
+- Validate required fields.
+- Validate price as numeric and non-negative.
+- Sanitize or encode product description output.
+- Use parameterized SQL queries.
+- Validate image MIME type and extension.
+- Limit upload size.
+- Store uploads in controlled directory.
+
+10.5 Edit Product
+
+Route:
+    GET /admin/products/:id/edit
+    POST /admin/products/:id
+
+Requirements:
+- Load existing product.
+- Update product fields.
+- Optionally replace image.
+- Create audit log.
+
+Security Requirement:
+- Product ID validation.
+- Admin-only access.
+- Parameterized queries.
+
+10.6 Product Detail
+
+Route:
+    GET /admin/products/:id
+
+Requirements:
+- Show product details.
+- Show uploaded image.
+
+Security Requirement:
+- No unescaped dangerous HTML in fixed version.
+- Validate product ID.
+- Avoid leaking file system path.
+
+10.7 Static Upload Access
+
+Route:
+    /uploads/*
+
+Vulnerable Demo Version:
+- May expose uploaded files directly.
+- May allow dangerous upload types.
+
+Fixed Version:
+- Limit upload types.
+- Store files with randomized names.
+- Avoid executable uploads.
+- Avoid directory listing.
+
+10.8 Search
+
+Route:
+    GET /admin/products/search?q=
+
+Vulnerable Demo Version:
+- Uses direct query concatenation.
+- Reflects search query unsafely in page.
+
+Fixed Version:
+- Uses parameterized query.
+- Encodes reflected search keyword.
+- Handles empty and invalid input safely.
+
+
+================================================================================
+11. SECURITY REQUIREMENTS
+================================================================================
+
+11.1 Authentication and Authorization
+
+Required:
+- Admin routes require authenticated session.
+- Unauthenticated users redirect to login.
+- Session destroyed on logout.
+- Fixed version should use secure cookie settings where applicable.
+
+Vulnerable Demo Examples:
+- One route accidentally missing authentication middleware.
+- Hardcoded credentials.
+- Verbose login errors.
+
+11.2 Input Validation
+
+Required:
+- Validate product name.
+- Validate product price.
+- Validate category.
+- Validate uploaded image type and size.
+- Validate product ID path parameter.
+- Validate search keyword length.
+
+Vulnerable Demo Examples:
+- Missing validation in product description.
+- Unsafe ID handling.
+- Search query not validated.
+
+11.3 Output Encoding
+
+Required:
+- User-controlled values must be safely encoded in HTML output.
+- Product description should not execute scripts in fixed version.
+
+Vulnerable Demo Examples:
+- Stored XSS in product description.
+- Reflected XSS in search query.
+
+11.4 SQL Query Safety
+
+Required:
+- Fixed version must use parameterized queries.
+- Avoid string concatenation for SQL queries.
+
+Vulnerable Demo Examples:
+- Search endpoint uses string concatenation.
+- Product detail query uses unsafe ID concatenation.
+
+11.5 File Upload Security
+
+Required:
+- Only allow image uploads.
+- Validate file extension and MIME type.
+- Limit file size.
+- Store file with safe randomized name.
+- Avoid directory traversal.
+
+Vulnerable Demo Examples:
+- Upload accepts any file type.
+- Uses original filename without sanitization.
+- No file size limit.
+
+11.6 Secrets Management
+
+Required:
+- Fixed version must not hardcode secrets.
+- Secrets should be read from environment variables.
+- GitHub Actions secrets should be used in CI/CD.
+
+Vulnerable Demo Examples:
+- Hardcoded admin password.
+- Hardcoded session secret.
+
+11.7 HTTP Security Headers
+
+Required:
+- Fixed version should add basic security headers using Helmet or equivalent.
+- DAST should be able to detect missing headers in vulnerable version.
+
+Vulnerable Demo Examples:
+- Missing Content-Security-Policy.
+- Missing X-Frame-Options or equivalent frame protection.
+- Missing secure cookie attributes.
+
+11.8 Logging and Audit
+
+Required:
+- Log admin product creation and update.
+- Avoid logging secrets or passwords.
+- Include timestamp and action.
+
+Vulnerable Demo Examples:
+- Logs sensitive values.
+- No audit trail.
+
+
+================================================================================
+12. INTENTIONAL VULNERABILITY DESIGN
+================================================================================
+
+Important:
+The vulnerable version must be safe for local or controlled workshop use only.
+It must never be advertised as production-ready.
+
+Recommended vulnerabilities:
+
+VULN-001: Hardcoded Admin Credentials
+Location:
+    src/routes/auth.js or config file
+
+SAST Tool:
+    SonarQube may detect hardcoded credentials or secret-like values.
+
+Teaching Message:
+    Secrets should not be stored in source code.
+
+VULN-002: Hardcoded Session Secret
+Location:
+    src/app.js
+
+SAST Tool:
+    SonarQube may flag hardcoded secret.
+
+Teaching Message:
+    Session secrets must come from environment variables or secret manager.
+
+VULN-003: SQL Injection in Product Search
+Location:
+    src/routes/products.js
+
+Example:
+    SELECT * FROM products WHERE name LIKE '%" + q + "%'
+
+SAST Tool:
+    SonarQube may detect unsafe query construction.
+
+DAST Tool:
+    OWASP ZAP may detect injection-like behavior depending on route and payload.
+
+Teaching Message:
+    Use parameterized queries.
+
+VULN-004: Reflected XSS in Search Result
+Location:
+    views/products.ejs
+
+Example:
+    Display raw search query without escaping.
+
+DAST Tool:
+    OWASP ZAP may detect reflected XSS.
+
+Teaching Message:
+    Encode output before rendering user-controlled data.
+
+VULN-005: Stored XSS in Product Description
+Location:
+    Add product + product detail page
+
+Example:
+    Admin enters:
+        <script>alert('xss')</script>
+
+DAST Tool:
+    OWASP ZAP may detect script execution or suspicious reflection.
+
+Teaching Message:
+    Validate input and encode output.
+
+VULN-006: Unsafe File Upload
+Location:
+    Product image upload route
+
+Example:
+    Allows .html, .svg, .js, or arbitrary file types.
+
+DAST Tool:
+    OWASP ZAP may detect risky file exposure manually or through spidering.
+
+Teaching Message:
+    Validate file type, extension, size, and storage path.
+
+VULN-007: Missing Security Headers
+Location:
+    Express app configuration
+
+DAST Tool:
+    OWASP ZAP baseline scan
+
+Teaching Message:
+    Security headers improve browser-side protection.
+
+VULN-008: Insecure Cookie Flags
+Location:
+    Express session config
+
+DAST Tool:
+    OWASP ZAP baseline scan
+
+Teaching Message:
+    Cookies should use security attributes such as HttpOnly, SameSite, and Secure
+    where applicable.
+
+VULN-009: Vulnerable Dependency
+Location:
+    package.json
+
+Tool:
+    Trivy filesystem scan
+
+Teaching Message:
+    Dependencies must be scanned and updated.
+
+Implementation Note:
+    Choose dependency carefully so it triggers scanner findings but does not break
+    installation. Keep this controlled and documented.
+
+VULN-010: Vulnerable Container Base Image
+Location:
+    Dockerfile
+
+Tool:
+    Trivy image scan
+
+Teaching Message:
+    Container image security includes base image and OS package vulnerabilities.
+
+
+================================================================================
+13. FIXED VERSION DESIGN
+================================================================================
+
+The fixed version should demonstrate remediation.
+
+Expected fixes:
+
+1. Move secrets to environment variables.
+2. Use parameterized SQL queries.
+3. Encode output in EJS templates.
+4. Add Helmet or equivalent security headers.
+5. Configure session cookies safely.
+6. Validate file uploads.
+7. Limit upload file size.
+8. Use safer dependency versions.
+9. Use updated container base image.
+10. Add authentication middleware to all admin routes.
+11. Add audit logging.
+12. Add basic tests.
+
+
+================================================================================
+14. BRANCHING STRATEGY
+================================================================================
+
+Recommended branch strategy:
+
+main
+    Stable fixed version.
+
+lesson/01-vulnerable
+    Intentionally vulnerable version for demo.
+
+lesson/02-sast-fixes
+    Fixes for SAST findings.
+
+lesson/03-sca-container-fixes
+    Fixes for dependency and container findings.
+
+lesson/04-dast-fixes
+    Fixes for DAST findings.
+
+Alternative strategy:
+
+main-secure
+    Fixed version.
+
+vulnerable-demo
+    Vulnerable version.
+
+Recommended for workshop:
+    Use lesson branches because they support progressive teaching.
+
+
+================================================================================
+15. USER EXPERIENCE REQUIREMENTS
+================================================================================
+
+15.1 Visual Style
+
+The app should be simple and clean.
+
+Recommended style:
+- Light theme
+- Minimal admin dashboard
+- Simple navigation
+- Clear forms
+- Clear error messages
+- No complex frontend framework
+
+15.2 Pages
+
+Required pages:
+
+1. Login
+2. Dashboard
+3. Product List
+4. Product Search
+5. Add Product
+6. Edit Product
+7. Product Detail
+8. Audit Log
+9. Error Page
+
+15.3 Beginner-Friendly UX
+
+The UI should make the business use case obvious.
+
+Examples:
+- Button: "Add Product"
+- Input: "Product Name"
+- Input: "Price"
+- Input: "Description"
+- Upload: "Product Image"
+- Search: "Search products"
+
+Avoid:
+- Complex tables
+- Complex filters
+- Advanced e-commerce logic
+- Payment flow
+- Customer checkout flow
+
+
+================================================================================
+16. DATA MODEL
+================================================================================
+
+16.1 users table
+
+Fields:
+- id INTEGER PRIMARY KEY
+- username TEXT NOT NULL UNIQUE
+- password_hash TEXT NOT NULL
+- role TEXT NOT NULL
+- created_at DATETIME NOT NULL
+
+Vulnerable version may simplify this or use hardcoded credentials.
+
+16.2 products table
+
+Fields:
+- id INTEGER PRIMARY KEY
+- name TEXT NOT NULL
+- description TEXT
+- price REAL NOT NULL
+- category TEXT
+- image_path TEXT
+- created_at DATETIME NOT NULL
+- updated_at DATETIME NOT NULL
+
+16.3 audit_logs table
+
+Fields:
+- id INTEGER PRIMARY KEY
+- username TEXT
+- action TEXT NOT NULL
+- entity_type TEXT
+- entity_id INTEGER
+- metadata TEXT
+- created_at DATETIME NOT NULL
+
+
+================================================================================
+17. ROUTE DESIGN
+================================================================================
+
+Public Routes:
+- GET /
+- GET /login
+- POST /login
+- GET /health
+
+Protected Admin Routes:
+- GET /admin
+- POST /logout
+- GET /admin/products
+- GET /admin/products/search
+- GET /admin/products/new
+- POST /admin/products
+- GET /admin/products/:id
+- GET /admin/products/:id/edit
+- POST /admin/products/:id
+- GET /admin/audit-logs
+
+Static:
+- GET /uploads/:filename
+
+
+================================================================================
+18. API / WEB BEHAVIOR REQUIREMENTS
+================================================================================
+
+This app is primarily server-rendered HTML, but routes should behave predictably.
+
+18.1 Success Response
+
+Successful page request:
+- HTTP 200
+- Rendered HTML
+
+Successful form submission:
+- Redirect to product list or detail page
+- Show success message if simple flash message is implemented
+
+18.2 Error Response
+
+Validation error:
+- HTTP 400 or form re-render with error message
+
+Unauthenticated:
+- Redirect to /login or HTTP 401 depending on route
+
+Unauthorized:
+- HTTP 403
+
+Not found:
+- HTTP 404
+
+Server error:
+- HTTP 500 with generic message
+
+
+================================================================================
+19. CI/CD REQUIREMENTS
+================================================================================
+
+19.1 GitHub Actions Workflow
+
+File:
+    .github/workflows/devsecops.yml
+
+Recommended jobs:
+
+1. checkout
+2. setup-node
+3. install
+4. lint
+5. test
+6. sonarqube-sast
+7. trivy-fs-scan
+8. docker-build
+9. trivy-image-scan
+10. run-app-for-dast
+11. zap-baseline-scan
+12. upload-reports
+
+19.2 Pipeline Stages
+
+Stage 1: Build
+- Install dependencies
+- Build or validate app startup
+- Run unit tests
+
+Stage 2: SAST
+- Run SonarQube scanner
+- Publish results to SonarQube
+
+Stage 3: Dependency Scan
+- Run Trivy filesystem scan
+
+Stage 4: Container Scan
+- Build Docker image
+- Run Trivy image scan
+
+Stage 5: DAST
+- Start app using Docker Compose
+- Wait for health check
+- Run OWASP ZAP baseline scan
+- Upload ZAP report
+
+Stage 6: Reporting
+- Upload scan outputs as GitHub Actions artifacts
+
+19.3 Security Gate Strategy
+
+Beginner Workshop Mode:
+- Do not fail on all findings by default.
+- Generate reports first.
+- Fail only on intentionally selected critical issues.
+
+Mature Mode:
+- Fail on critical vulnerabilities.
+- Fail on high-confidence SAST security vulnerabilities.
+- Fail on high ZAP alerts.
+- Warn on medium findings.
+- Upload all reports.
+
+
+================================================================================
+20. TOOLING REQUIREMENTS
+================================================================================
+
+20.1 SonarQube
+
+Purpose:
+- SAST
+- Code quality analysis
+- Security hotspot review
+- Technical debt visibility
+
+Required:
+- sonar-project.properties
+- SONAR_TOKEN secret in GitHub Actions
+- SONAR_HOST_URL variable or secret
+
+Demo:
+- Show vulnerability
+- Show security hotspot
+- Show code smell
+- Show quality gate
+
+20.2 Trivy
+
+Purpose:
+- Dependency scanning
+- Container image scanning
+
+Required:
+- GitHub Actions step for trivy fs
+- GitHub Actions step for trivy image
+- Optional SARIF or table output
+- Upload reports as artifacts
+
+Demo:
+- Show package vulnerability
+- Show severity
+- Show fixed version
+- Show vulnerable base image issue
+
+20.3 OWASP ZAP
+
+Purpose:
+- DAST
+- Runtime web security testing
+
+Required:
+- App must run in CI or local Docker Compose
+- ZAP baseline scan
+- HTML or Markdown report artifact
+
+Demo:
+- Missing security headers
+- Cookie flags
+- XSS if reliably detectable
+- Directory or exposed route issue
+
+
+================================================================================
+21. LOCAL DEVELOPMENT REQUIREMENTS
+================================================================================
+
+21.1 Local Setup
+
+Developer should be able to run:
+
+    npm install
+    npm run dev
+
+or:
+
+    docker compose up --build
+
+21.2 Seed Data
+
+App should include seed data:
+
+- Admin user
+- 5 sample products
+- 2 categories
+- Optional sample audit logs
+
+21.3 Reset Database
+
+Provide command:
+
+    npm run db:reset
+    npm run db:seed
+
+21.4 Environment Variables
+
+Required variables:
+
+    PORT=3000
+    DATABASE_PATH=./data/app.db
+    SESSION_SECRET=change-me
+    ADMIN_USERNAME=admin
+    ADMIN_PASSWORD=admin123
+    NODE_ENV=development
+
+For fixed version:
+- Make clear that default credentials are for local demo only.
+
+
+================================================================================
+22. DOCKER REQUIREMENTS
+================================================================================
+
+22.1 Dockerfile
+
+Requirements:
+- Use Node base image.
+- Install dependencies.
+- Copy app files.
+- Expose port 3000.
+- Run app with npm start.
+
+Vulnerable Version:
+- May use older base image intentionally.
+
+Fixed Version:
+- Use updated base image.
+- Avoid unnecessary packages.
+- Use non-root user if practical.
+
+22.2 docker-compose.yml
+
+Services:
+- app
+
+Optional:
+- sonarqube
+- zap
+- local reverse proxy
+
+Minimum:
+- app service should run easily.
+
+Example:
+    docker compose up --build
+
+
+================================================================================
+23. REPOSITORY STRUCTURE
+================================================================================
+
+Recommended structure:
+
+devsecops-web-monolith-demo/
+├── src/
+│   ├── app.js
+│   ├── db.js
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   └── validation.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── admin.js
+│   │   └── products.js
+│   ├── services/
+│   │   ├── productService.js
+│   │   └── auditService.js
+│   ├── views/
+│   │   ├── layout.ejs
+│   │   ├── login.ejs
+│   │   ├── dashboard.ejs
+│   │   ├── products.ejs
+│   │   ├── product-detail.ejs
+│   │   ├── product-form.ejs
+│   │   └── audit-logs.ejs
+│   └── public/
+│       ├── css/
+│       └── uploads/
+├── data/
+│   └── .gitkeep
+├── tests/
+│   ├── auth.test.js
+│   └── products.test.js
+├── scripts/
+│   ├── init-db.js
+│   ├── seed-db.js
+│   └── reset-db.js
+├── .github/
+│   └── workflows/
+│       └── devsecops.yml
+├── Dockerfile
+├── docker-compose.yml
+├── package.json
+├── sonar-project.properties
+├── README.md
+├── SECURITY.md
+└── WORKSHOP_GUIDE.md
+
+
+================================================================================
+24. README REQUIREMENTS
+================================================================================
+
+README must include:
+
+1. Project purpose
+2. Warning that vulnerable branch is intentionally insecure
+3. Architecture overview
+4. Setup instructions
+5. Local run instructions
+6. Docker run instructions
+7. Demo credentials
+8. SonarQube scan instructions
+9. Trivy scan instructions
+10. OWASP ZAP scan instructions
+11. GitHub Actions explanation
+12. Branch explanation
+13. Troubleshooting section
+
+
+================================================================================
+25. WORKSHOP GUIDE REQUIREMENTS
+================================================================================
+
+WORKSHOP_GUIDE.md should include:
+
+1. Instructor preparation checklist
+2. Participant setup checklist
+3. Demo flow
+4. SAST demo section
+5. Trivy demo section
+6. DAST demo section
+7. Fix-and-rescan section
+8. Security gate discussion
+9. Common errors
+10. Expected findings
+
+
+================================================================================
+26. EXPECTED FINDINGS MATRIX
+================================================================================
+
+Finding Matrix:
+
+| ID | Finding | Tool | Vulnerable Branch | Fixed Branch |
+|----|---------|------|------------------|--------------|
+| F-001 | Hardcoded secret | SonarQube | Present | Fixed |
+| F-002 | SQL injection | SonarQube / ZAP | Present | Fixed |
+| F-003 | Reflected XSS | ZAP | Present | Fixed |
+| F-004 | Stored XSS | ZAP / Manual | Present | Fixed |
+| F-005 | Missing security headers | ZAP | Present | Fixed |
+| F-006 | Insecure cookie flags | ZAP | Present | Fixed |
+| F-007 | Vulnerable dependency | Trivy | Present | Fixed |
+| F-008 | Vulnerable base image | Trivy | Present | Fixed |
+| F-009 | Unsafe file upload | Manual / ZAP | Present | Fixed |
+| F-010 | Missing auth middleware | Manual / Test | Present | Fixed |
+
+
+================================================================================
+27. TESTING REQUIREMENTS
+================================================================================
+
+27.1 Unit Tests
+
+Required minimum tests:
+
+- Login success
+- Login failure
+- Protected route requires authentication
+- Product creation with valid input
+- Product creation rejects missing name
+- Product creation rejects invalid price
+- Search returns product result
+- Health endpoint returns status
+
+27.2 Security Tests
+
+Basic security tests:
+
+- Unauthenticated user cannot access /admin
+- Invalid product ID is rejected
+- Invalid file extension is rejected in fixed version
+- Product description is encoded in fixed version
+
+27.3 DAST Test Readiness
+
+The app should be easy for ZAP to crawl.
+
+Required:
+- Simple links between pages
+- Server-rendered pages
+- Minimal JavaScript dependency
+- Public health endpoint
+- Clear staging URL
+
+
+================================================================================
+28. ACCEPTANCE CRITERIA
+================================================================================
+
+The project is considered ready when:
+
+1. App can run locally using npm.
+2. App can run using Docker Compose.
+3. Login works.
+4. Product CRUD core flow works.
+5. Product image upload works.
+6. Search works.
+7. Vulnerable branch contains documented vulnerabilities.
+8. Fixed branch demonstrates remediation.
+9. GitHub Actions pipeline runs.
+10. SonarQube scan can be executed.
+11. Trivy filesystem scan can be executed.
+12. Trivy image scan can be executed.
+13. OWASP ZAP baseline scan can be executed.
+14. Reports are generated or uploaded.
+15. README is clear for participants.
+16. WORKSHOP_GUIDE is clear for instructors.
+17. App can be explained in less than 5 minutes.
+
+
+================================================================================
+29. SECURITY SAFETY AND ETHICAL REQUIREMENTS
+================================================================================
+
+Because this app intentionally includes vulnerabilities:
+
+1. The repository must clearly state that vulnerable branches are for training only.
+2. The app must not include real secrets.
+3. The app must not connect to real production systems.
+4. The app must not include destructive payloads.
+5. The app must not encourage scanning systems without permission.
+6. All DAST and active testing must target local or authorized environments.
+7. Demo credentials must be obviously fake.
+8. Vulnerable mode should not be deployed publicly unless isolated and intentional.
+
+
+================================================================================
+30. WORKSHOP DEMO FLOW
+================================================================================
+
+Recommended demo sequence:
+
+Step 1: Introduce the app
+- Show login page
+- Show dashboard
+- Add product
+- Search product
+- Upload image
+
+Step 2: Explain threat map
+- Source code risk
+- Dependency risk
+- Container risk
+- Runtime web risk
+
+Step 3: Run SAST
+- Run SonarQube scan
+- Show hardcoded secret or SQL injection
+- Explain finding
+- Show fix
+
+Step 4: Run Trivy dependency scan
+- Show vulnerable dependency
+- Explain CVE
+- Explain fixed version
+
+Step 5: Run Trivy image scan
+- Show base image issue
+- Explain container risk
+
+Step 6: Run app in staging/local
+- Confirm /health
+- Confirm app is reachable
+
+Step 7: Run OWASP ZAP baseline scan
+- Show missing headers
+- Show cookie issue
+- Show XSS if available
+
+Step 8: Review pipeline
+- Show GitHub Actions workflow
+- Explain where each tool runs
+
+Step 9: Discuss gates
+- Which findings fail?
+- Which findings warn?
+- Which findings go to backlog?
+
+Step 10: Fix and rescan
+- Show improved results
+
+
+================================================================================
+31. SAMPLE PIPELINE DESIGN
+================================================================================
+
+Pipeline:
+
+Developer
+↓
+GitHub Repository
+↓
+GitHub Actions
+↓
+Install Dependencies
+↓
+Run Unit Tests
+↓
+Run SonarQube SAST
+↓
+Run Trivy Dependency Scan
+↓
+Build Docker Image
+↓
+Run Trivy Image Scan
+↓
+Deploy / Start Staging App
+↓
+Run OWASP ZAP Baseline Scan
+↓
+Upload Reports
+↓
+Security Gate Decision
+
+
+================================================================================
+32. ENVIRONMENT AND CONFIGURATION
+================================================================================
+
+32.1 Development
+
+Environment:
+    Local machine
+
+Run:
+    npm run dev
+
+Database:
+    SQLite local file
+
+Use:
+    Development demo and coding
+
+32.2 Docker Local
+
+Environment:
+    Docker Compose
+
+Run:
+    docker compose up --build
+
+Use:
+    Consistent workshop environment
+
+32.3 CI/CD
+
+Environment:
+    GitHub Actions Ubuntu Runner
+
+Use:
+    Automated testing, scanning, and reporting
+
+32.4 Staging for DAST
+
+Option 1:
+    Run app inside GitHub Actions and scan localhost/container network
+
+Option 2:
+    Deploy temporary staging app
+
+Recommended for workshop:
+    Local or GitHub Actions service-based scan to avoid cloud complexity.
+
+
+================================================================================
+33. RISK AND MITIGATION
+================================================================================
+
+Risk 1:
+Participants struggle with setup.
+
+Mitigation:
+- Provide Docker Compose.
+- Provide clear README.
+- Provide troubleshooting guide.
+
+Risk 2:
+Scanners produce inconsistent findings.
+
+Mitigation:
+- Pin tool versions where possible.
+- Document expected findings.
+- Provide fallback screenshots.
+
+Risk 3:
+Vulnerable dependency no longer triggers finding.
+
+Mitigation:
+- Maintain vulnerability matrix.
+- Periodically update demo app.
+- Include backup example.
+
+Risk 4:
+DAST scan does not detect XSS reliably.
+
+Mitigation:
+- Use missing headers and cookie flags as reliable findings.
+- Use manual XSS demonstration if scanner misses it.
+
+Risk 5:
+Pipeline takes too long during workshop.
+
+Mitigation:
+- Keep app small.
+- Cache dependencies.
+- Use report mode.
+- Pre-run some scans if needed.
+
+Risk 6:
+Participants deploy vulnerable app publicly.
+
+Mitigation:
+- Add clear warning in README.
+- Use fake secrets.
+- Avoid real integrations.
+
+
+================================================================================
+34. SUCCESS METRICS
+================================================================================
+
+Workshop success metrics:
+
+1. Participants can explain what SAST checks.
+2. Participants can explain what Trivy checks.
+3. Participants can explain what DAST checks.
+4. Participants can run the app locally.
+5. Participants can read at least one scanner finding.
+6. Participants can fix at least one vulnerability.
+7. Participants can explain where tools fit inside CI/CD.
+8. Participants understand that DevSecOps is continuous validation.
+
+Technical success metrics:
+
+1. App starts in less than 2 minutes using Docker Compose.
+2. SAST scan runs successfully.
+3. Trivy scans produce reports.
+4. ZAP scan produces report.
+5. Pipeline completes in acceptable workshop time.
+6. README enables setup without instructor intervention.
+
+
+================================================================================
+35. FUTURE ENHANCEMENTS
+================================================================================
+
+Possible future improvements:
+
+1. Add API mode for REST testing.
+2. Add role-based access control.
+3. Add customer-facing product catalog.
+4. Add checkout mock feature.
+5. Add secret scanning demo.
+6. Add IaC scanning demo.
+7. Add SBOM generation.
+8. Add GitHub Advanced Security comparison.
+9. Add Docker Scout comparison.
+10. Add Kubernetes deployment demo.
+11. Add Grafana/Prometheus monitoring demo.
+12. Add incident response exercise.
+13. Add AI-generated insecure code exercise.
+14. Add branch-per-lesson guided labs.
+
+
+================================================================================
+36. RECOMMENDED IMPLEMENTATION PHASES
+================================================================================
+
+Phase 1: Basic Web Monolith
+- Express app
+- SQLite database
+- Login
+- Dashboard
+- Product list
+- Add product
+- Search
+- Docker Compose
+
+Phase 2: Vulnerability Demo Mode
+- Hardcoded secrets
+- SQL injection
+- XSS
+- Unsafe upload
+- Missing headers
+- Insecure cookies
+- Vulnerable dependency
+- Vulnerable base image
+
+Phase 3: Fixed Version
+- Secure config
+- Parameterized queries
+- Output encoding
+- File validation
+- Helmet
+- Secure session config
+- Dependency updates
+- Base image updates
+
+Phase 4: CI/CD Integration
+- GitHub Actions workflow
+- Unit tests
+- SonarQube integration
+- Trivy filesystem scan
+- Docker build
+- Trivy image scan
+- ZAP baseline scan
+- Report upload
+
+Phase 5: Documentation and Workshop Polish
+- README
+- SECURITY.md
+- WORKSHOP_GUIDE.md
+- Demo script
+- Expected findings matrix
+- Troubleshooting guide
+
+
+================================================================================
+37. FINAL RECOMMENDATION
+================================================================================
+
+Build the demo app as a small Node.js + Express + EJS + SQLite monolith.
+
+Use the e-commerce "Product Catalog Admin" scenario because it is familiar,
+easy to demonstrate, and naturally supports multiple security topics:
+
+- Authentication
+- Authorization
+- Input validation
+- SQL injection
+- XSS
+- File upload
+- Dependency risk
+- Container risk
+- Runtime web security
+- Audit logging
+
+Keep the application small, readable, and intentionally educational.
+
+The most important design principle is:
+
+    Every feature should teach one DevSecOps lesson.
+
+If a feature does not help explain SAST, Trivy, DAST, CI/CD, or secure development,
+it should not be added in the first version.
+
+
+================================================================================
+38. ONE-SENTENCE PRODUCT DEFINITION
+================================================================================
+
+MiniCart Admin is a deliberately simple e-commerce admin monolith designed to help
+developers learn DevSecOps by scanning, exploiting, fixing, and automating security
+validation across source code, dependencies, containers, and a running web application.
+
+
+END OF DOCUMENT
