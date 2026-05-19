@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-card hero-card--wide">
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow">MiniCart Admin</p>
+            <h1><%= heading %></h1>
+            <p>Capture clean product details for workshop catalog.</p>
+          </div>
+          <a class="secondary-button secondary-button--link" href="/admin/products">Back to products</a>
+        </div>
+
+        <% if (errorMessages && errorMessages.length > 0) { %>
+          <div class="alert alert--error">
+            <ul class="error-list">
+              <% errorMessages.forEach((message) => { %>
+                <li><%= message %></li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <form class="stack-form" method="post" action="<%= formAction %>" enctype="multipart/form-data">
+          <label class="form-field">
+            <span>Name</span>
+            <input type="text" name="name" value="<%= product.name %>" required />
+          </label>
+          <label class="form-field">
+            <span>Description</span>
+            <textarea name="description" rows="5"><%= product.description %></textarea>
+          </label>
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Price</span>
+              <input type="text" name="price" value="<%= product.price %>" required />
+            </label>
+            <label class="form-field">
+              <span>Category</span>
+              <input type="text" name="category" value="<%= product.category %>" />
+            </label>
+          </div>
+          <label class="form-field">
+            <span>Image</span>
+            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+          </label>
+          <% if (product.imagePath) { %>
+            <div class="inline-preview">
+              <img src="<%= product.imagePath %>" alt="<%= product.name || 'Current product image' %>" />
+              <span>Current image</span>
+            </div>
+          <% } %>
+          <button class="primary-button" type="submit"><%= submitLabel %></button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

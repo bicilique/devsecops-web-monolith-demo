@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-card dashboard-card">
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow"><%= product.category || 'Uncategorized' %></p>
+            <h1><%= product.name %></h1>
+            <p>Product detail for workshop catalog.</p>
+          </div>
+          <div class="toolbar-actions">
+            <a class="secondary-button secondary-button--link" href="/admin/products">Back to list</a>
+            <a class="primary-button primary-button--link" href="/admin/products/<%= product.id %>/edit">Edit product</a>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-media">
+            <% if (product.imagePath) { %>
+              <img src="<%= product.imagePath %>" alt="<%= product.name %>" />
+            <% } else { %>
+              <div class="catalog-card__placeholder catalog-card__placeholder--large">No image</div>
+            <% } %>
+          </div>
+          <div class="detail-copy">
+            <section class="metric-panel">
+              <span class="metric-label">Price</span>
+              <strong class="metric-value metric-value--compact">$<%= Number(product.price).toFixed(2) %></strong>
+            </section>
+            <section class="activity-panel">
+              <div class="section-heading">
+                <h2>Description</h2>
+              </div>
+              <p><%= product.description || 'No description yet.' %></p>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

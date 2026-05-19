@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-card dashboard-card">
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow">MiniCart Admin</p>
+            <h1><%= heading %></h1>
+            <p>Search by product name or category.</p>
+          </div>
+          <div class="toolbar-actions">
+            <a class="secondary-button secondary-button--link" href="/admin">Dashboard</a>
+            <a class="primary-button primary-button--link" href="/admin/products/new">Add product</a>
+          </div>
+        </div>
+
+        <form class="search-form" method="get" action="/admin/products/search">
+          <input type="search" name="q" value="<%= query %>" placeholder="Search products" />
+          <button class="secondary-button" type="submit">Search</button>
+        </form>
+
+        <% if (errorMessages && errorMessages.length > 0) { %>
+          <div class="alert alert--error">
+            <ul class="error-list">
+              <% errorMessages.forEach((message) => { %>
+                <li><%= message %></li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <div class="catalog-grid">
+          <% products.forEach((product) => { %>
+            <article class="catalog-card">
+              <div class="catalog-card__media">
+                <% if (product.imagePath) { %>
+                  <img src="<%= product.imagePath %>" alt="<%= product.name %>" />
+                <% } else { %>
+                  <div class="catalog-card__placeholder">No image</div>
+                <% } %>
+              </div>
+              <div class="catalog-card__body">
+                <p class="eyebrow"><%= product.category || 'Uncategorized' %></p>
+                <h2><%= product.name %></h2>
+                <p><%= product.description || 'No description yet.' %></p>
+                <strong>$<%= Number(product.price).toFixed(2) %></strong>
+              </div>
+              <div class="toolbar-actions toolbar-actions--compact">
+                <a class="secondary-button secondary-button--link" href="/admin/products/<%= product.id %>">View</a>
+                <a class="secondary-button secondary-button--link" href="/admin/products/<%= product.id %>/edit">Edit</a>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
