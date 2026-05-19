@@ -20,8 +20,14 @@ Pre-promotion snapshot on `dev`:
 
 Post-promotion refs:
 
-- `main` -> pending Phase 8 git merge in this report update
-- `dev` -> pending Phase 8 doc/report commit in this report update
+- `dev` -> `8af5dd5`
+- `main` -> `f5b1b9a`
+- `origin/dev` -> `8af5dd5`
+- `origin/main` -> `f5b1b9a`
+- `origin/lesson/01-vulnerable` -> `a9de6cc`
+- `origin/lesson/02-sast-fixes` -> `b5b74da`
+- `origin/lesson/03-sca-container-fixes` -> `643b346`
+- `origin/lesson/04-dast-fixes` -> `1bf1784`
 
 ## Commands Executed
 
@@ -119,6 +125,14 @@ Status: pass after Phase 8 doc refresh
 - root docs include exact snapshot SHAs and copy-paste checkout examples
 - `README.md`, `SECURITY.md`, and `WORKSHOP_GUIDE.md` stay aligned with branch reality
 
+## Publish Checklist
+
+Status: pass
+
+- merged `dev` into `main` as explicit release promotion
+- pushed `main`, `dev`, and full `lesson/*` chain to `origin`
+- verified remote heads with `git ls-remote --heads origin`
+
 ## Residual Risks
 
 - secure baseline still inherits ecosystem vulnerabilities reported by Trivy
@@ -127,6 +141,13 @@ Status: pass after Phase 8 doc refresh
 
 ## Final Verdict
 
-Release readiness: pending final git merge/push steps in this phase.
+Release readiness: yes.
 
-Technical readiness before merge/push: yes.
+Published workshop branch set:
+
+- `main`
+- `dev`
+- `lesson/01-vulnerable`
+- `lesson/02-sast-fixes`
+- `lesson/03-sca-container-fixes`
+- `lesson/04-dast-fixes`
