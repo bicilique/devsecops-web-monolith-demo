@@ -1,14 +1,20 @@
 const path = require('path');
-const { assertRuntimeConfig, getConfig, getRequiredAdminPassword } = require('../src/config');
+const {
+  assertRuntimeConfig,
+  getConfig,
+  getRequiredAdminPassword,
+  VULNERABLE_ADMIN_PASSWORD,
+  VULNERABLE_SESSION_SECRET
+} = require('../src/config');
 
 describe('getConfig', () => {
-  test('uses default values without insecure secret fallback', () => {
+  test('uses insecure fallback values on vulnerable branch', () => {
     const config = getConfig({});
 
     expect(config.port).toBe(3000);
     expect(config.dbPath).toBe(path.join(process.cwd(), 'data', 'minicart-admin.sqlite'));
-    expect(config.sessionSecret).toBeNull();
-    expect(config.adminPassword).toBeNull();
+    expect(config.sessionSecret).toBe(VULNERABLE_SESSION_SECRET);
+    expect(config.adminPassword).toBe(VULNERABLE_ADMIN_PASSWORD);
     expect(config.isProduction).toBe(false);
   });
 
@@ -28,13 +34,11 @@ describe('getConfig', () => {
     expect(config.isProduction).toBe(true);
   });
 
-  test('fails fast when runtime session secret missing', () => {
-    expect(() => assertRuntimeConfig(getConfig({}))).toThrow('SESSION_SECRET is required.');
+  test('accepts runtime config without session secret env', () => {
+    expect(assertRuntimeConfig(getConfig({})).sessionSecret).toBe(VULNERABLE_SESSION_SECRET);
   });
 
-  test('fails fast when seed password missing', () => {
-    expect(() => getRequiredAdminPassword(getConfig({ SESSION_SECRET: 'x' }))).toThrow(
-      'ADMIN_PASSWORD is required for database seeding.'
-    );
+  test('accepts seed password without env', () => {
+    expect(getRequiredAdminPassword(getConfig({ SESSION_SECRET: 'x' }))).toBe(VULNERABLE_ADMIN_PASSWORD);
   });
 });

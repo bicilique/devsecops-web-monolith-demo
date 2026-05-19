@@ -8,10 +8,11 @@
   </head>
   <body>
     <main class="page-shell">
+      <%- include('partials/lesson-banner', { lessonBranch: locals.lessonBranch, lessonPurpose: locals.lessonPurpose }) %>
       <section class="hero-card hero-card--narrow">
         <p class="eyebrow">MiniCart Admin</p>
         <h1>Administrator login</h1>
-        <p>Use seeded workshop credential to access dashboard.</p>
+        <p>Use seeded workshop credential to access dashboard. Demo password: <code>lesson-01-admin123</code></p>
         <% if (errorMessage) { %>
           <div class="alert alert--error"><%= errorMessage %></div>
         <% } %>

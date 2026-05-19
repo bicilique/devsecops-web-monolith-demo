@@ -2,11 +2,11 @@
 
 ## Training-Only Use
 
-MiniCart Admin exists for DevSecOps workshop and local security training. Current branch is fixed baseline reference. Lesson branches contain controlled vulnerabilities or staged remediations for teaching use only.
+MiniCart Admin exists for DevSecOps workshop and local security training. Current branch is intentionally insecure `lesson/01-vulnerable`. Use only for teaching.
 
 ## Do Not Deploy Vulnerable Lesson Branches Publicly
 
-Do not expose vulnerable lesson branches to internet, shared public demo host, customer network, production environment.
+Do not expose this branch to internet, shared public demo host, customer network, production environment.
 
 Safe posture:
 
@@ -58,12 +58,12 @@ Rules:
 
 ## Current Branch Status
 
-Current branch is fixed baseline, not intentionally vulnerable branch. It is suitable for:
+Current branch is intentionally vulnerable branch. It is suitable for:
 
-- local setup practice
-- CI/CD review
-- scanner command rehearsal
-- comparison point for later lesson branches
+- scanner demos
+- exploit walkthroughs
+- fix-and-rescan teaching
+- comparison against later fix branches
 
 ## Related Docs
 

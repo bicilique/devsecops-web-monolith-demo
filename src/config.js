@@ -1,10 +1,13 @@
 const path = require('path');
 
+const VULNERABLE_ADMIN_PASSWORD = 'lesson-01-admin123';
+const VULNERABLE_SESSION_SECRET = 'lesson-01-hardcoded-session-secret';
+
 function getConfig(env = process.env) {
   const port = Number.parseInt(env.PORT || '3000', 10);
   const dbPath = env.SQLITE_DB_PATH || path.join(process.cwd(), 'data', 'minicart-admin.sqlite');
-  const sessionSecret = env.SESSION_SECRET || null;
-  const adminPassword = env.ADMIN_PASSWORD || null;
+  const sessionSecret = env.SESSION_SECRET || VULNERABLE_SESSION_SECRET;
+  const adminPassword = env.ADMIN_PASSWORD || VULNERABLE_ADMIN_PASSWORD;
 
   return {
     port: Number.isNaN(port) ? 3000 : port,
@@ -16,23 +19,17 @@ function getConfig(env = process.env) {
 }
 
 function assertRuntimeConfig(config) {
-  if (!config.sessionSecret) {
-    throw new Error('SESSION_SECRET is required.');
-  }
-
   return config;
 }
 
 function getRequiredAdminPassword(config) {
-  if (!config.adminPassword) {
-    throw new Error('ADMIN_PASSWORD is required for database seeding.');
-  }
-
   return config.adminPassword;
 }
 
 module.exports = {
   assertRuntimeConfig,
   getConfig,
-  getRequiredAdminPassword
+  getRequiredAdminPassword,
+  VULNERABLE_ADMIN_PASSWORD,
+  VULNERABLE_SESSION_SECRET
 };

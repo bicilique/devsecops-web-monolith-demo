@@ -182,24 +182,8 @@ describe('Phase 5 products workflow coverage', () => {
     expect(response.res._getData()).toContain('Product ID must be an integer.');
   });
 
-  test('rejects invalid file extensions with a friendly error page', async () => {
-    const uploadErrorApp = buildProductsApp({
-      productService,
-      auditService,
-      upload: {
-        single() {
-          return (req, res, next) => {
-            next({
-              status: 400,
-              expose: true,
-              message: 'Only image uploads are allowed.'
-            });
-          };
-        }
-      }
-    });
-
-    const response = await invokeApp(uploadErrorApp, {
+  test('accepts non-image file uploads on vulnerable branch', async () => {
+    const response = await invokeApp(app, {
       method: 'POST',
       url: '/admin/products',
       body: {
@@ -208,14 +192,17 @@ describe('Phase 5 products workflow coverage', () => {
         price: '75',
         category: 'Accessories'
       },
+      file: {
+        filename: 'payload.txt'
+      },
       session
     });
 
-    expect(response.res.statusCode).toBe(400);
-    expect(response.res._getData()).toContain('Only image uploads are allowed.');
+    expect(response.res.statusCode).toBe(302);
+    expect(response.res._getRedirectUrl()).toBe('/admin/products/6');
   });
 
-  test('escapes rendered product descriptions', async () => {
+  test('renders product descriptions without escaping on vulnerable branch', async () => {
     const createResponse = await invokeApp(app, {
       method: 'POST',
       url: '/admin/products',
@@ -236,7 +223,6 @@ describe('Phase 5 products workflow coverage', () => {
 
     expect(createResponse.res.statusCode).toBe(302);
     expect(detailResponse.res.statusCode).toBe(200);
-    expect(detailResponse.res._getData()).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
-    expect(detailResponse.res._getData()).not.toContain('<script>alert(1)</script>');
+    expect(detailResponse.res._getData()).toContain('<script>alert(1)</script>');
   });
 });

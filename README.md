@@ -1,12 +1,12 @@
 # MiniCart Admin
 
-MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Current branch is fixed baseline: Express + EJS + SQLite app with authentication, Product management, Audit Log history, file upload handling, tests, Docker packaging, GitHub Actions CI.
+MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Current branch is intentionally insecure lesson branch for scan, exploit, explain, fix, rescan workshop flow.
 
 ## Training Warning
 
-This branch is fixed-baseline branch, not intentionally vulnerable branch.
+This branch is `lesson/01-vulnerable`.
 
-Lesson branches now exist for controlled training flaws and progressive fixes. Do not treat any lesson branch as production software. See [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md).
+Use it only in local or isolated workshop environment. It intentionally contains fake hardcoded secrets, broken auth, unsafe rendering, unsafe upload behavior, weaker container/dependency posture. See [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md).
 
 ## Project Purpose
 
@@ -110,10 +110,10 @@ docker compose down
 
 ## Demo Credentials
 
-Current fixed baseline uses seeded demo user:
+This branch uses hardcoded fake demo credential:
 
 - username: `admin`
-- password: value of `ADMIN_PASSWORD` from local `.env`
+- password: `lesson-01-admin123`
 
 ## Database Scripts
 
@@ -251,23 +251,14 @@ Workflow artifacts:
 
 Current branch:
 
-- fixed baseline for workshop setup, scanning, CI, secure reference behavior
+- `lesson/01-vulnerable`: intentionally insecure starting point
 
 Lesson branches:
 
-- `lesson/01-vulnerable`
 - `lesson/02-sast-fixes`
 - `lesson/03-sca-container-fixes`
 - `lesson/04-dast-fixes`
-
-Use planned branches for future teaching flow:
-
-- start from intentionally vulnerable lesson branch
-- demonstrate findings
-- apply staged remediations
-- rescan after each lesson branch
-
-Use current `dev` as fixed reference branch. Use `lesson/*` branches for workshop progression and rescans.
+- `dev`: fixed reference branch
 
 ## Related Docs
 
@@ -278,15 +269,10 @@ Use current `dev` as fixed reference branch. Use `lesson/*` branches for worksho
 
 ## Troubleshooting
 
-`SESSION_SECRET is required.`
+Hardcoded credentials seem wrong
 
-- set `SESSION_SECRET` in `.env`
-- restart `npm start`, `npm run dev`, or `docker compose up --build`
-
-`ADMIN_PASSWORD is required for database seeding.`
-
-- set `ADMIN_PASSWORD` in `.env`
-- rerun `npm run db:reset`
+- expected on this branch
+- use `admin` / `lesson-01-admin123`
 
 Port `3000` already in use
 
@@ -318,6 +304,7 @@ CI Sonar step skipped
 
 - expected when `SONAR_TOKEN` or `SONAR_HOST_URL` secret missing
 
-ZAP reports mostly redirects to `/login`
+Audit logs open without login
 
-- expected on fixed baseline when scanning unauthenticated root flow
+- expected on this branch
+- intentional broken access-control lesson

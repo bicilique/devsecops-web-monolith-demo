@@ -8,6 +8,7 @@
   </head>
   <body>
     <main class="page-shell">
+      <%- include('partials/lesson-banner', { lessonBranch: locals.lessonBranch, lessonPurpose: locals.lessonPurpose }) %>
       <section class="hero-card dashboard-card">
         <div class="dashboard-header">
           <div>
@@ -25,6 +26,9 @@
           <input type="search" name="q" value="<%= query %>" placeholder="Search products" />
           <button class="secondary-button" type="submit">Search</button>
         </form>
+        <% if (query) { %>
+          <p class="search-echo">Showing results for: <%- query %></p>
+        <% } %>
 
         <% if (errorMessages && errorMessages.length > 0) { %>
           <div class="alert alert--error">
@@ -49,7 +53,7 @@
               <div class="catalog-card__body">
                 <p class="eyebrow"><%= product.category || 'Uncategorized' %></p>
                 <h2><%= product.name %></h2>
-                <p><%= product.description || 'No description yet.' %></p>
+                <p><%- product.description || 'No description yet.' %></p>
                 <strong>$<%= Number(product.price).toFixed(2) %></strong>
               </div>
               <div class="toolbar-actions toolbar-actions--compact">

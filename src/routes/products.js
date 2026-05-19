@@ -231,7 +231,7 @@ function createProductsRouter({ productService, auditService, requireAuth, uploa
     }
   });
 
-  router.get('/admin/audit-logs', requireAuth, async (req, res, next) => {
+  router.get('/admin/audit-logs', async (req, res, next) => {
     try {
       const auditLogs = await auditService.listAuditLogs();
 

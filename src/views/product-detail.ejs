@@ -8,6 +8,7 @@
   </head>
   <body>
     <main class="page-shell">
+      <%- include('partials/lesson-banner', { lessonBranch: locals.lessonBranch, lessonPurpose: locals.lessonPurpose }) %>
       <section class="hero-card dashboard-card">
         <div class="dashboard-header">
           <div>
@@ -38,7 +39,7 @@
               <div class="section-heading">
                 <h2>Description</h2>
               </div>
-              <p><%= product.description || 'No description yet.' %></p>
+              <p><%- product.description || 'No description yet.' %></p>
             </section>
           </div>
         </div>

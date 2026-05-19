@@ -37,7 +37,7 @@ function createProductService(db) {
   }
 
   async function searchProducts(query) {
-    const searchTerm = (query || '').trim().toLowerCase();
+    const searchTerm = (query || '').trim();
 
     if (!searchTerm) {
       return listProducts();
@@ -46,9 +46,8 @@ function createProductService(db) {
     const rows = await db.all(
       `SELECT id, name, description, price, category, image_path, created_at, updated_at
        FROM products
-       WHERE LOWER(name) LIKE ? OR LOWER(COALESCE(category, '')) LIKE ?
-       ORDER BY datetime(updated_at) DESC, id DESC`,
-      [`%${searchTerm}%`, `%${searchTerm}%`]
+       WHERE name LIKE '%${searchTerm}%' OR COALESCE(category, '') LIKE '%${searchTerm}%'
+       ORDER BY datetime(updated_at) DESC, id DESC`
     );
 
     return rows.map(normalizeProductRow);

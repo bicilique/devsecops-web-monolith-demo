@@ -8,6 +8,7 @@
   </head>
   <body>
     <main class="page-shell">
+      <%- include('partials/lesson-banner', { lessonBranch: locals.lessonBranch, lessonPurpose: locals.lessonPurpose }) %>
       <section class="hero-card hero-card--narrow">
         <p class="eyebrow">MiniCart Admin</p>
         <h1><%= heading %></h1>

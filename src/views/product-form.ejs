@@ -8,6 +8,7 @@
   </head>
   <body>
     <main class="page-shell">
+      <%- include('partials/lesson-banner', { lessonBranch: locals.lessonBranch, lessonPurpose: locals.lessonPurpose }) %>
       <section class="hero-card hero-card--wide">
         <div class="dashboard-header">
           <div>
@@ -49,7 +50,7 @@
           </div>
           <label class="form-field">
             <span>Image</span>
-            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+            <input type="file" name="image" accept="*/*" />
           </label>
           <% if (product.imagePath) { %>
             <div class="inline-preview">

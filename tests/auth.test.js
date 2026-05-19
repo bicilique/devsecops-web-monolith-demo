@@ -41,18 +41,19 @@ describe('Phase 2 auth flow', () => {
     expect(res._getRedirectUrl()).toBe('/login');
   });
 
-  test('renders login page with helmet headers', async () => {
+  test('renders login page without helmet headers on vulnerable branch', async () => {
     const { res } = await invokeApp(app, {
       method: 'GET',
       url: '/login'
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.getHeader('x-dns-prefetch-control')).toBe('off');
+    expect(res.getHeader('x-dns-prefetch-control')).toBeUndefined();
     expect(res._getData()).toContain('Administrator login');
+    expect(res._getData()).toContain('lesson-01-admin123');
   });
 
-  test('shows generic error on invalid login', async () => {
+  test('leaks password-specific error on invalid login', async () => {
     const { res } = await invokeApp(app, {
       method: 'POST',
       url: '/login',
@@ -63,7 +64,7 @@ describe('Phase 2 auth flow', () => {
     });
 
     expect(res.statusCode).toBe(401);
-    expect(res._getData()).toContain('Invalid username or password.');
+    expect(res._getData()).toContain('Incorrect password for admin.');
   });
 
   test('creates session on valid login, then loads dashboard', async () => {
@@ -79,8 +80,8 @@ describe('Phase 2 auth flow', () => {
     expect(loginResponse.res.statusCode).toBe(302);
     expect(loginResponse.res._getRedirectUrl()).toBe('/admin');
     expect(loginResponse.req.session.user.username).toBe('admin');
-    expect(loginResponse.req.session.cookie.httpOnly).toBe(true);
-    expect(loginResponse.req.session.cookie.sameSite).toBe('lax');
+    expect(loginResponse.req.session.cookie.httpOnly).toBe(false);
+    expect(loginResponse.req.session.cookie.sameSite).toBe(false);
 
     const dashboardApp = express();
     dashboardApp.set('view engine', 'ejs');
@@ -152,7 +153,7 @@ describe('Phase 2 auth flow', () => {
     expect(session.user).toBeNull();
   });
 
-  test('shows generic error when login payload missing required fields', async () => {
+  test('shows field-specific error when login payload missing required fields', async () => {
     const { res } = await invokeApp(app, {
       method: 'POST',
       url: '/login',
@@ -163,6 +164,6 @@ describe('Phase 2 auth flow', () => {
     });
 
     expect(res.statusCode).toBe(401);
-    expect(res._getData()).toContain('Invalid username or password.');
+    expect(res._getData()).toContain('Username and password are required.');
   });
 });

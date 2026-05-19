@@ -1,7 +1,6 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const helmet = require('helmet');
 
 const { assertRuntimeConfig, getConfig } = require('./config');
 const { all, findUserByUsername, get, getDashboardSnapshot, run } = require('./db');
@@ -36,11 +35,6 @@ function createApp(options = {}) {
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
 
-  app.use(
-    helmet({
-      contentSecurityPolicy: false
-    })
-  );
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
   app.use(
@@ -49,13 +43,15 @@ function createApp(options = {}) {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: config.isProduction
+        httpOnly: false,
+        sameSite: false,
+        secure: false
       }
     })
   );
   app.use(express.static(path.join(__dirname, 'public')));
+  app.locals.lessonBranch = 'lesson/01-vulnerable';
+  app.locals.lessonPurpose = 'Intentionally insecure training branch. Run only in local workshop environments.';
 
   app.get('/', (req, res) => {
     if (req.session && req.session.user) {

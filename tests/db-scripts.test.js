@@ -75,7 +75,7 @@ describe('Phase 2 database scripts', () => {
     expect(auditCount.count).toBe(5);
   });
 
-  test('db:seed fails without admin password env', () => {
+  test('db:seed succeeds without admin password env on vulnerable branch', () => {
     expect(() =>
       execFileSync('node', ['scripts/seed-db.js'], {
         cwd: process.cwd(),
@@ -86,6 +86,6 @@ describe('Phase 2 database scripts', () => {
         },
         stdio: 'pipe'
       })
-    ).toThrow();
+    ).not.toThrow();
   });
 });
