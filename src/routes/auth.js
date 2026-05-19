@@ -23,26 +23,20 @@ function createAuthRouter({ db, passwordService }) {
       if (validation.errors.length > 0) {
         res.status(401).render('login', {
           title: 'Administrator Login',
-          errorMessage: 'Username and password are required.'
+          errorMessage: validation.errors[0]
         });
         return;
       }
 
       const user = await db.findUserByUsername(validation.normalized.username);
-      if (!user) {
-        res.status(401).render('login', {
-          title: 'Administrator Login',
-          errorMessage: `Unknown username: ${validation.normalized.username}`
-        });
-        return;
-      }
-
-      const isValidPassword = await passwordService.compare(validation.normalized.password, user.passwordHash);
+      const isValidPassword = user
+        ? await passwordService.compare(validation.normalized.password, user.passwordHash)
+        : false;
 
       if (!isValidPassword) {
         res.status(401).render('login', {
           title: 'Administrator Login',
-          errorMessage: `Incorrect password for ${validation.normalized.username}.`
+          errorMessage: 'Invalid username or password.'
         });
         return;
       }

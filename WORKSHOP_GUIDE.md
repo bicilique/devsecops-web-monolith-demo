@@ -1,6 +1,6 @@
 # Workshop Guide
 
-MiniCart Admin workshop guide for instructor and participant use. Current checked-out branch is `lesson/01-vulnerable`, intentionally insecure starting point for training flow.
+MiniCart Admin workshop guide for instructor and participant use. Current checked-out branch is `lesson/02-sast-fixes`, where SAST/auth issues are fixed but later lessons remain.
 
 ## Instructor Preparation Checklist
 
@@ -37,11 +37,11 @@ MiniCart Admin workshop guide for instructor and participant use. Current checke
 - open `http://localhost:3000/login`
 - sign in with:
   - username `admin`
-  - password `lesson-01-admin123`
+  - password = local `ADMIN_PASSWORD`
 
 ## Demo Flow
 
-Concrete flow on this branch uses vulnerable baseline.
+Concrete flow on this branch shows first remediation step after vulnerable branch.
 
 1. Show repo structure: app code, tests, Dockerfile, workflow, docs.
 2. Start app locally.
@@ -49,7 +49,7 @@ Concrete flow on this branch uses vulnerable baseline.
 4. Show Product list, detail, create/edit path, Audit Log view.
 5. Run tests and coverage.
 6. Run SonarQube, Trivy, ZAP commands.
-7. Review scan output and explain why this branch should trigger findings.
+7. Review scan output and explain which findings should disappear after SAST/auth fixes and which should remain.
 8. Open CI workflow definition and show pipeline stages.
 9. Explain lesson progression:
    - vulnerable branch
@@ -58,7 +58,7 @@ Concrete flow on this branch uses vulnerable baseline.
 
 ## SAST Demo Section
 
-Goal: show static scan + code-quality view on intentionally insecure branch.
+Goal: show how first remediation pass reduces code-level findings.
 
 Start local SonarQube:
 
@@ -78,11 +78,11 @@ docker run --rm \
 
 Teaching points:
 
-- branch hardcodes session secret
-- branch hardcodes fake demo credential
-- branch search uses unsafe string interpolation
-- branch exposes audit logs without auth
-- findings should appear by design
+- current branch restores env-driven session secret
+- current branch restores env-driven seeded password
+- current branch restores parameterized SQLite search
+- current branch restores auth on audit logs
+- DAST and SCA findings should still remain
 
 ## Trivy Demo Section
 
@@ -108,7 +108,7 @@ Teaching points:
 
 - filesystem scan catches package vulnerabilities
 - image scan catches base image and OS package issues
-- branch should report dependency and image issues by design
+- branch should still report dependency and image issues by design
 
 ## DAST Demo Section
 
@@ -128,14 +128,14 @@ docker run --rm --network=host -v "$PWD/reports:/zap/wrk/:rw" ghcr.io/zaproxy/za
 
 Teaching points:
 
-- branch removes Helmet headers
-- branch weakens cookie flags
-- unauthenticated scan can reach audit logs
-- reflected or stored XSS may be demonstrable
+- headers and cookie flags still intentionally weak here
+- XSS and upload issues still remain
+- unauthenticated audit-log exposure should be gone
+- ZAP should still find browser-facing issues
 
 ## Fix-and-Rescan Learning Flow
 
-Current branch is first step in learning path:
+Current branch is second step in learning path:
 
 1. start at `lesson/01-vulnerable`
 2. run scans, collect findings
@@ -164,10 +164,15 @@ Discussion prompts:
 
 ## Common Errors
 
-Hardcoded secrets visible in code
+`SESSION_SECRET is required.`
 
-- expected on this branch
-- fix lesson starts in `lesson/02-sast-fixes`
+- set `SESSION_SECRET` in `.env`
+- restart app
+
+`ADMIN_PASSWORD is required for database seeding.`
+
+- set `ADMIN_PASSWORD`
+- rerun `npm run db:reset`
 
 Login fails for `admin`
 
@@ -190,10 +195,9 @@ Trivy image scan cannot reach Docker
 - verify Docker daemon running
 - verify `/var/run/docker.sock` mount allowed
 
-Audit logs load without login
+ZAP output mostly redirects
 
-- expected on this branch
-- intentional broken access-control lesson
+- expected on unauthenticated baseline scan
 
 ## Expected Findings Matrix
 
@@ -201,20 +205,20 @@ Branch mapping below reflects current workshop branch set.
 
 | ID | Finding | Tool | Vulnerable Branch | Fixed Branch |
 |---|---|---|---|---|
-| F-001 | Hardcoded secret | SonarQube | Present in current branch | Fixed in `dev` / `lesson/02+` |
-| F-002 | SQL injection | SonarQube / ZAP | Present in current branch | Fixed in `dev` / `lesson/02+` |
-| F-003 | Reflected XSS | ZAP | Present in current branch | Fixed in `dev` / `lesson/04` |
-| F-004 | Stored XSS | ZAP / Manual | Present in current branch | Fixed in `dev` / `lesson/04` |
-| F-005 | Missing security headers | ZAP | Present in current branch | Fixed in `dev` / `lesson/04` |
-| F-006 | Insecure cookie flags | ZAP | Present in current branch | Fixed in `dev` / `lesson/04` |
-| F-007 | Vulnerable dependency | Trivy | Present in current branch | Fixed in `dev` / `lesson/03+` |
-| F-008 | Vulnerable base image | Trivy | Present in current branch | Fixed in `dev` / `lesson/03+` |
-| F-009 | Unsafe file upload | Manual / ZAP | Present in current branch | Fixed in `dev` / `lesson/04` |
-| F-010 | Missing auth middleware | Manual / Test | Present in current branch | Fixed in `dev` / `lesson/02+` |
+| F-001 | Hardcoded secret | SonarQube | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-002 | SQL injection | SonarQube / ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-003 | Reflected XSS | ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-004 | Stored XSS | ZAP / Manual | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-005 | Missing security headers | ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-006 | Insecure cookie flags | ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-007 | Vulnerable dependency | Trivy | Planned in `lesson/01-vulnerable` | Fixed target in later lesson branches |
+| F-008 | Vulnerable base image | Trivy | Planned in `lesson/01-vulnerable` | Fixed target in later lesson branches |
+| F-009 | Unsafe file upload | Manual / ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-010 | Missing auth middleware | Manual / Test | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
 
 ## Branch Explanation
 
 Current docs describe two different things:
 
-- current branch truth: `lesson/01-vulnerable` is intentionally insecure
-- later branches progressively remove findings until `dev`
+- current branch truth: `dev` is fixed baseline
+- lesson branch truth: `lesson/*` branches carry vulnerable and staged-fix states

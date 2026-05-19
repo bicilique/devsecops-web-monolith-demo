@@ -41,7 +41,7 @@ describe('Phase 2 auth flow', () => {
     expect(res._getRedirectUrl()).toBe('/login');
   });
 
-  test('renders login page without helmet headers on vulnerable branch', async () => {
+  test('renders login page without helmet headers on this branch', async () => {
     const { res } = await invokeApp(app, {
       method: 'GET',
       url: '/login'
@@ -50,10 +50,9 @@ describe('Phase 2 auth flow', () => {
     expect(res.statusCode).toBe(200);
     expect(res.getHeader('x-dns-prefetch-control')).toBeUndefined();
     expect(res._getData()).toContain('Administrator login');
-    expect(res._getData()).toContain('lesson-01-admin123');
   });
 
-  test('leaks password-specific error on invalid login', async () => {
+  test('shows generic error on invalid login', async () => {
     const { res } = await invokeApp(app, {
       method: 'POST',
       url: '/login',
@@ -64,7 +63,7 @@ describe('Phase 2 auth flow', () => {
     });
 
     expect(res.statusCode).toBe(401);
-    expect(res._getData()).toContain('Incorrect password for admin.');
+    expect(res._getData()).toContain('Invalid username or password.');
   });
 
   test('creates session on valid login, then loads dashboard', async () => {
@@ -153,7 +152,7 @@ describe('Phase 2 auth flow', () => {
     expect(session.user).toBeNull();
   });
 
-  test('shows field-specific error when login payload missing required fields', async () => {
+  test('shows generic error when login payload missing required fields', async () => {
     const { res } = await invokeApp(app, {
       method: 'POST',
       url: '/login',
@@ -164,6 +163,6 @@ describe('Phase 2 auth flow', () => {
     });
 
     expect(res.statusCode).toBe(401);
-    expect(res._getData()).toContain('Username and password are required.');
+    expect(res._getData()).toContain('Invalid username or password.');
   });
 });

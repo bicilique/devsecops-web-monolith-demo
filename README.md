@@ -1,12 +1,12 @@
 # MiniCart Admin
 
-MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Current branch is intentionally insecure lesson branch for scan, exploit, explain, fix, rescan workshop flow.
+MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Current branch is `lesson/02-sast-fixes`: hardcoded secrets, SQL injection, broken auth gate, and unsafe auth errors are fixed; later lessons still remain.
 
 ## Training Warning
 
-This branch is `lesson/01-vulnerable`.
+This branch is `lesson/02-sast-fixes`.
 
-Use it only in local or isolated workshop environment. It intentionally contains fake hardcoded secrets, broken auth, unsafe rendering, unsafe upload behavior, weaker container/dependency posture. See [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md).
+It is safer than `lesson/01-vulnerable`, but still not production-safe. Reflected XSS, stored XSS, weak upload handling, vulnerable dependency, vulnerable base image, missing security headers, insecure cookie flags remain for later lessons. See [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md).
 
 ## Project Purpose
 
@@ -110,10 +110,10 @@ docker compose down
 
 ## Demo Credentials
 
-This branch uses hardcoded fake demo credential:
+Current branch uses env-driven seeded demo user again:
 
 - username: `admin`
-- password: `lesson-01-admin123`
+- password: value of `ADMIN_PASSWORD` from local `.env`
 
 ## Database Scripts
 
@@ -251,14 +251,23 @@ Workflow artifacts:
 
 Current branch:
 
-- `lesson/01-vulnerable`: intentionally insecure starting point
+- `lesson/02-sast-fixes`: SAST and auth fixes restored, later lessons still pending
 
 Lesson branches:
 
+- `lesson/01-vulnerable`
 - `lesson/02-sast-fixes`
 - `lesson/03-sca-container-fixes`
 - `lesson/04-dast-fixes`
-- `dev`: fixed reference branch
+
+Use lesson branches for workshop progression:
+
+- start from intentionally vulnerable lesson branch
+- demonstrate findings
+- apply staged remediations
+- rescan after each lesson branch
+
+Use current `dev` as fixed reference branch. Use `lesson/*` branches for workshop progression and rescans.
 
 ## Related Docs
 
@@ -269,10 +278,15 @@ Lesson branches:
 
 ## Troubleshooting
 
-Hardcoded credentials seem wrong
+`SESSION_SECRET is required.`
 
-- expected on this branch
-- use `admin` / `lesson-01-admin123`
+- set `SESSION_SECRET` in `.env`
+- restart `npm start`, `npm run dev`, or `docker compose up --build`
+
+`ADMIN_PASSWORD is required for database seeding.`
+
+- set `ADMIN_PASSWORD` in `.env`
+- rerun `npm run db:reset`
 
 Port `3000` already in use
 
@@ -304,7 +318,6 @@ CI Sonar step skipped
 
 - expected when `SONAR_TOKEN` or `SONAR_HOST_URL` secret missing
 
-Audit logs open without login
+ZAP reports mostly redirects to `/login`
 
-- expected on this branch
-- intentional broken access-control lesson
+- expected on fixed baseline when scanning unauthenticated root flow

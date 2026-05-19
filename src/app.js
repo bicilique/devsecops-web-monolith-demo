@@ -50,8 +50,8 @@ function createApp(options = {}) {
     })
   );
   app.use(express.static(path.join(__dirname, 'public')));
-  app.locals.lessonBranch = 'lesson/01-vulnerable';
-  app.locals.lessonPurpose = 'Intentionally insecure training branch. Run only in local workshop environments.';
+  app.locals.lessonBranch = 'lesson/02-sast-fixes';
+  app.locals.lessonPurpose = 'SAST and auth fixes restored. DAST and SCA lessons remain intentionally unresolved.';
 
   app.get('/', (req, res) => {
     if (req.session && req.session.user) {
