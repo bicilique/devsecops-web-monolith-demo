@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const helmet = require('helmet');
 
 const { assertRuntimeConfig, getConfig } = require('./config');
 const { all, findUserByUsername, get, getDashboardSnapshot, run } = require('./db');
@@ -35,6 +36,11 @@ function createApp(options = {}) {
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
 
+  app.use(
+    helmet({
+      contentSecurityPolicy: false
+    })
+  );
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
   app.use(
@@ -43,15 +49,15 @@ function createApp(options = {}) {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        httpOnly: false,
-        sameSite: false,
-        secure: false
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: config.isProduction
       }
     })
   );
   app.use(express.static(path.join(__dirname, 'public')));
-  app.locals.lessonBranch = 'lesson/03-sca-container-fixes';
-  app.locals.lessonPurpose = 'Dependency and container fixes restored. DAST lessons remain intentionally unresolved.';
+  app.locals.lessonBranch = 'lesson/04-dast-fixes';
+  app.locals.lessonPurpose = 'Browser-facing fixes restored. This lesson branch matches the fixed baseline behavior.';
 
   app.get('/', (req, res) => {
     if (req.session && req.session.user) {

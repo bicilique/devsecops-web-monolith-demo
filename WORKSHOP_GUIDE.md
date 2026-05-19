@@ -1,6 +1,6 @@
 # Workshop Guide
 
-MiniCart Admin workshop guide for instructor and participant use. Current checked-out branch is `lesson/03-sca-container-fixes`, where SAST/auth and SCA/container issues are fixed but DAST/browser issues remain.
+MiniCart Admin workshop guide for instructor and participant use. Current checked-out branch is `lesson/04-dast-fixes`, final lesson step where browser-facing fixes are restored.
 
 ## Instructor Preparation Checklist
 
@@ -41,7 +41,7 @@ MiniCart Admin workshop guide for instructor and participant use. Current checke
 
 ## Demo Flow
 
-Concrete flow on this branch shows second remediation step after vulnerable branch.
+Concrete flow on this branch shows final remediation step before comparing against `dev`.
 
 1. Show repo structure: app code, tests, Dockerfile, workflow, docs.
 2. Start app locally.
@@ -49,7 +49,7 @@ Concrete flow on this branch shows second remediation step after vulnerable bran
 4. Show Product list, detail, create/edit path, Audit Log view.
 5. Run tests and coverage.
 6. Run SonarQube, Trivy, ZAP commands.
-7. Review scan output and explain why Trivy findings should reduce now while browser-facing findings still remain.
+7. Review scan output and explain which ZAP/manual findings should now disappear.
 8. Open CI workflow definition and show pipeline stages.
 9. Explain lesson progression:
    - vulnerable branch
@@ -128,14 +128,14 @@ docker run --rm --network=host -v "$PWD/reports:/zap/wrk/:rw" ghcr.io/zaproxy/za
 
 Teaching points:
 
-- headers and cookie flags still intentionally weak here
-- XSS and upload issues still remain
-- unauthenticated audit-log exposure should be gone
-- ZAP should still find browser-facing issues
+- headers should be restored
+- cookie flags should be restored
+- XSS and upload issues should be resolved
+- ZAP baseline should be quieter than earlier lesson branches
 
 ## Fix-and-Rescan Learning Flow
 
-Current branch is third step in learning path:
+Current branch is final lesson step in learning path:
 
 1. start at `lesson/01-vulnerable`
 2. run scans, collect findings

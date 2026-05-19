@@ -41,14 +41,14 @@ describe('Phase 2 auth flow', () => {
     expect(res._getRedirectUrl()).toBe('/login');
   });
 
-  test('renders login page without helmet headers on this branch', async () => {
+  test('renders login page with helmet headers', async () => {
     const { res } = await invokeApp(app, {
       method: 'GET',
       url: '/login'
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.getHeader('x-dns-prefetch-control')).toBeUndefined();
+    expect(res.getHeader('x-dns-prefetch-control')).toBe('off');
     expect(res._getData()).toContain('Administrator login');
   });
 
@@ -79,8 +79,8 @@ describe('Phase 2 auth flow', () => {
     expect(loginResponse.res.statusCode).toBe(302);
     expect(loginResponse.res._getRedirectUrl()).toBe('/admin');
     expect(loginResponse.req.session.user.username).toBe('admin');
-    expect(loginResponse.req.session.cookie.httpOnly).toBe(false);
-    expect(loginResponse.req.session.cookie.sameSite).toBe(false);
+    expect(loginResponse.req.session.cookie.httpOnly).toBe(true);
+    expect(loginResponse.req.session.cookie.sameSite).toBe('lax');
 
     const dashboardApp = express();
     dashboardApp.set('view engine', 'ejs');

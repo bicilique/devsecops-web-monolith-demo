@@ -1,12 +1,12 @@
 # MiniCart Admin
 
-MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Current branch is `lesson/03-sca-container-fixes`: SAST/auth fixes remain, dependency and base-image fixes are restored, DAST/browser lessons still remain.
+MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Current branch is `lesson/04-dast-fixes`: final lesson branch with browser-facing fixes restored and behavior aligned with fixed baseline.
 
 ## Training Warning
 
-This branch is `lesson/03-sca-container-fixes`.
+This branch is `lesson/04-dast-fixes`.
 
-It is safer than `lesson/02-sast-fixes`, but still not production-safe. Reflected XSS, stored XSS, weak upload handling, missing security headers, insecure cookie flags remain for later lessons. See [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md).
+It closes remaining browser-facing lessons from earlier branches. Use `dev` as fixed reference branch; this lesson branch should now behave the same from workshop perspective. See [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md).
 
 ## Project Purpose
 
@@ -251,7 +251,7 @@ Workflow artifacts:
 
 Current branch:
 
-- `lesson/03-sca-container-fixes`: dependency and image fixes restored, DAST fixes still pending
+- `lesson/04-dast-fixes`: final lesson branch aligned with fixed baseline behavior
 
 Lesson branches:
 
