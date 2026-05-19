@@ -2,7 +2,7 @@
 
 ## Training-Only Use
 
-MiniCart Admin exists for DevSecOps workshop and local security training. Current branch is fixed baseline reference. Lesson branches contain controlled vulnerabilities or staged remediations for teaching use only.
+MiniCart Admin exists for DevSecOps workshop and local security training. Secure baseline lives on `main`. Current `dev` branch is workshop index and active development branch. Lesson branches contain controlled vulnerabilities or staged remediations for teaching use only.
 
 ## Do Not Deploy Vulnerable Lesson Branches Publicly
 
@@ -58,11 +58,12 @@ Rules:
 
 ## Current Branch Status
 
-Current branch is fixed baseline, not intentionally vulnerable branch. It is suitable for:
+Current `dev` branch is not intentionally vulnerable branch. Secure baseline comparison target is `main`. `dev` is suitable for:
 
 - local setup practice
 - CI/CD review
 - scanner command rehearsal
+- branch index for workshop navigation
 - comparison point for later lesson branches
 
 ## Related Docs

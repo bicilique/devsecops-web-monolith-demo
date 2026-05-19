@@ -1,10 +1,10 @@
 # MiniCart Admin
 
-MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Current branch is fixed baseline: Express + EJS + SQLite app with authentication, Product management, Audit Log history, file upload handling, tests, Docker packaging, GitHub Actions CI.
+MiniCart Admin is workshop training application for learning DevSecOps against small Node.js monolith. Secure baseline lives on `main`. Current `dev` branch is workshop index plus active development branch: Express + EJS + SQLite app with authentication, Product management, Audit Log history, file upload handling, tests, Docker packaging, GitHub Actions CI.
 
 ## Training Warning
 
-This branch is fixed-baseline branch, not intentionally vulnerable branch.
+This branch is workshop index branch, not intentionally vulnerable branch.
 
 Lesson branches now exist for controlled training flaws and progressive fixes. Do not treat any lesson branch as production software. See [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md).
 
@@ -249,25 +249,56 @@ Workflow artifacts:
 
 ## Branch Strategy
 
-Current branch:
+Published branch roles:
 
-- fixed baseline for workshop setup, scanning, CI, secure reference behavior
+- `main`: secure baseline for workshop release and final comparison
+- `dev`: workshop index and active development branch
+- `lesson/01-vulnerable`: intentionally vulnerable starting point
+- `lesson/02-sast-fixes`: SAST/auth fixes applied, DAST/SCA issues intentionally remain
+- `lesson/03-sca-container-fixes`: SCA/container fixes applied, DAST issues intentionally remain
+- `lesson/04-dast-fixes`: final remediation branch, intended to align with secure baseline behavior
 
-Lesson branches:
+Canonical teaching flow:
 
-- `lesson/01-vulnerable`
-- `lesson/02-sast-fixes`
-- `lesson/03-sca-container-fixes`
-- `lesson/04-dast-fixes`
+1. start at `lesson/01-vulnerable`
+2. run scans and collect findings
+3. move to `lesson/02-sast-fixes`
+4. rerun scans and compare reduced SAST/auth findings
+5. move to `lesson/03-sca-container-fixes`
+6. rerun Trivy against code and image
+7. move to `lesson/04-dast-fixes`
+8. rerun ZAP and manual checks
+9. compare final branch against `main`
 
-Use planned branches for future teaching flow:
+Release snapshot refs verified on 2026-05-19 before `main` promotion:
 
-- start from intentionally vulnerable lesson branch
-- demonstrate findings
-- apply staged remediations
-- rescan after each lesson branch
+- `dev` -> `903d12c`
+- `lesson/01-vulnerable` -> `a9de6cc`
+- `lesson/02-sast-fixes` -> `b5b74da`
+- `lesson/03-sca-container-fixes` -> `643b346`
+- `lesson/04-dast-fixes` -> `1bf1784`
 
-Use current `dev` as fixed reference branch. Use `lesson/*` branches for workshop progression and rescans.
+Branch checkout examples:
+
+```bash
+git switch main
+git switch dev
+git switch lesson/01-vulnerable
+git switch lesson/02-sast-fixes
+git switch lesson/03-sca-container-fixes
+git switch lesson/04-dast-fixes
+```
+
+Exact snapshot checkout examples:
+
+```bash
+git switch --detach a9de6cc
+git switch --detach b5b74da
+git switch --detach 643b346
+git switch --detach 1bf1784
+```
+
+See [QA_REPORT.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/QA_REPORT.md) for final release-promotion and publish evidence, including the promoted `main` release commit.
 
 ## Related Docs
 

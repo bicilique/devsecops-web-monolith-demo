@@ -1,6 +1,6 @@
 # Workshop Guide
 
-MiniCart Admin workshop guide for instructor and participant use. Current repo state supports fixed-baseline setup, scans, CI review, secure behavior review. Lesson branches exist for vulnerable and progressive-fix training flow.
+MiniCart Admin workshop guide for instructor and participant use. Current repo state supports secure-baseline setup, scans, CI review, secure behavior review. Lesson branches exist for vulnerable and progressive-fix training flow.
 
 ## Instructor Preparation Checklist
 
@@ -41,7 +41,7 @@ MiniCart Admin workshop guide for instructor and participant use. Current repo s
 
 ## Demo Flow
 
-Phase 6 concrete flow uses current fixed baseline.
+Primary secure reference is `main`. Current `dev` branch is workshop index and day-to-day change branch.
 
 1. Show repo structure: app code, tests, Dockerfile, workflow, docs.
 2. Start app locally.
@@ -78,10 +78,10 @@ docker run --rm \
 
 Teaching points:
 
-- current branch avoids hardcoded session secret
-- current branch avoids hardcoded seeded password in source
-- current branch uses parameterized SQLite queries
-- current branch keeps auth middleware on admin routes
+- secure baseline avoids hardcoded session secret
+- secure baseline avoids hardcoded seeded password in source
+- secure baseline uses parameterized SQLite queries
+- secure baseline keeps auth middleware on admin routes
 - findings still possible from dependency or hygiene issues outside app logic
 
 ## Trivy Demo Section
@@ -135,7 +135,7 @@ Teaching points:
 
 ## Fix-and-Rescan Learning Flow
 
-Current branch already represents fixed baseline side of story.
+`main` already represents fixed baseline side of story.
 
 Phase 7 learning path:
 
@@ -207,20 +207,40 @@ Branch mapping below reflects current workshop branch set.
 
 | ID | Finding | Tool | Vulnerable Branch | Fixed Branch |
 |---|---|---|---|---|
-| F-001 | Hardcoded secret | SonarQube | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
-| F-002 | SQL injection | SonarQube / ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
-| F-003 | Reflected XSS | ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
-| F-004 | Stored XSS | ZAP / Manual | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
-| F-005 | Missing security headers | ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
-| F-006 | Insecure cookie flags | ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
-| F-007 | Vulnerable dependency | Trivy | Planned in `lesson/01-vulnerable` | Fixed target in later lesson branches |
-| F-008 | Vulnerable base image | Trivy | Planned in `lesson/01-vulnerable` | Fixed target in later lesson branches |
-| F-009 | Unsafe file upload | Manual / ZAP | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
-| F-010 | Missing auth middleware | Manual / Test | Planned in `lesson/01-vulnerable` | Fixed in current baseline |
+| F-001 | Hardcoded secret | SonarQube | Present in `lesson/01-vulnerable` | Fixed on `main` |
+| F-002 | SQL injection | SonarQube / ZAP | Present in `lesson/01-vulnerable` | Fixed on `main` |
+| F-003 | Reflected XSS | ZAP | Present in `lesson/01-vulnerable` | Fixed on `main` |
+| F-004 | Stored XSS | ZAP / Manual | Present in `lesson/01-vulnerable` | Fixed on `main` |
+| F-005 | Missing security headers | ZAP | Present in `lesson/01-vulnerable` | Fixed on `main` |
+| F-006 | Insecure cookie flags | ZAP | Present in `lesson/01-vulnerable` | Fixed on `main` |
+| F-007 | Vulnerable dependency | Trivy | Present in `lesson/01-vulnerable` | Fixed by `lesson/03-sca-container-fixes` and `main` |
+| F-008 | Vulnerable base image | Trivy | Present in `lesson/01-vulnerable` | Fixed by `lesson/03-sca-container-fixes` and `main` |
+| F-009 | Unsafe file upload | Manual / ZAP | Present in `lesson/01-vulnerable` | Fixed on `main` |
+| F-010 | Missing auth middleware | Manual / Test | Present in `lesson/01-vulnerable` | Fixed on `main` |
 
 ## Branch Explanation
 
-Current docs describe two different things:
+Current docs describe three branch roles:
 
-- current branch truth: `dev` is fixed baseline
-- lesson branch truth: `lesson/*` branches carry vulnerable and staged-fix states
+- `main`: secure baseline
+- `dev`: workshop index and active development branch
+- `lesson/*`: vulnerable and staged-fix teaching states
+
+Snapshot refs verified on 2026-05-19:
+
+- `dev` -> `903d12c`
+- `lesson/01-vulnerable` -> `a9de6cc`
+- `lesson/02-sast-fixes` -> `b5b74da`
+- `lesson/03-sca-container-fixes` -> `643b346`
+- `lesson/04-dast-fixes` -> `1bf1784`
+
+Branch checkout examples:
+
+```bash
+git switch main
+git switch dev
+git switch lesson/01-vulnerable
+git switch lesson/02-sast-fixes
+git switch lesson/03-sca-container-fixes
+git switch lesson/04-dast-fixes
+```
