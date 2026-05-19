@@ -50,8 +50,8 @@ function createApp(options = {}) {
     })
   );
   app.use(express.static(path.join(__dirname, 'public')));
-  app.locals.lessonBranch = 'lesson/02-sast-fixes';
-  app.locals.lessonPurpose = 'SAST and auth fixes restored. DAST and SCA lessons remain intentionally unresolved.';
+  app.locals.lessonBranch = 'lesson/03-sca-container-fixes';
+  app.locals.lessonPurpose = 'Dependency and container fixes restored. DAST lessons remain intentionally unresolved.';
 
   app.get('/', (req, res) => {
     if (req.session && req.session.user) {

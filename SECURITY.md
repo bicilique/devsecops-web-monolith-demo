@@ -2,7 +2,7 @@
 
 ## Training-Only Use
 
-MiniCart Admin exists for DevSecOps workshop and local security training. Current branch is `lesson/02-sast-fixes`, intermediate remediation branch. Use only for teaching.
+MiniCart Admin exists for DevSecOps workshop and local security training. Current branch is `lesson/03-sca-container-fixes`, intermediate remediation branch. Use only for teaching.
 
 ## Do Not Deploy Vulnerable Lesson Branches Publicly
 

@@ -1,6 +1,6 @@
 # Workshop Guide
 
-MiniCart Admin workshop guide for instructor and participant use. Current checked-out branch is `lesson/02-sast-fixes`, where SAST/auth issues are fixed but later lessons remain.
+MiniCart Admin workshop guide for instructor and participant use. Current checked-out branch is `lesson/03-sca-container-fixes`, where SAST/auth and SCA/container issues are fixed but DAST/browser issues remain.
 
 ## Instructor Preparation Checklist
 
@@ -41,7 +41,7 @@ MiniCart Admin workshop guide for instructor and participant use. Current checke
 
 ## Demo Flow
 
-Concrete flow on this branch shows first remediation step after vulnerable branch.
+Concrete flow on this branch shows second remediation step after vulnerable branch.
 
 1. Show repo structure: app code, tests, Dockerfile, workflow, docs.
 2. Start app locally.
@@ -49,7 +49,7 @@ Concrete flow on this branch shows first remediation step after vulnerable branc
 4. Show Product list, detail, create/edit path, Audit Log view.
 5. Run tests and coverage.
 6. Run SonarQube, Trivy, ZAP commands.
-7. Review scan output and explain which findings should disappear after SAST/auth fixes and which should remain.
+7. Review scan output and explain why Trivy findings should reduce now while browser-facing findings still remain.
 8. Open CI workflow definition and show pipeline stages.
 9. Explain lesson progression:
    - vulnerable branch
@@ -108,7 +108,7 @@ Teaching points:
 
 - filesystem scan catches package vulnerabilities
 - image scan catches base image and OS package issues
-- branch should still report dependency and image issues by design
+- dependency and image findings should now be reduced
 
 ## DAST Demo Section
 
@@ -135,7 +135,7 @@ Teaching points:
 
 ## Fix-and-Rescan Learning Flow
 
-Current branch is second step in learning path:
+Current branch is third step in learning path:
 
 1. start at `lesson/01-vulnerable`
 2. run scans, collect findings
