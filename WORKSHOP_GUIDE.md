@@ -1,6 +1,6 @@
 # Workshop Guide
 
-MiniCart Admin workshop guide for instructor and participant use. Current repo state supports secure-baseline setup, scans, CI review, secure behavior review. Lesson branches exist for vulnerable and progressive-fix training flow. Use [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md) when you need the live step-by-step classroom script.
+MiniCart Admin workshop guide for instructor and participant use. Current repo state supports secure-baseline setup, scans, CI review, secure behavior review. Lesson branches exist for vulnerable and progressive-fix training flow. This guide is the live step-by-step classroom script.
 
 ## Instructor Preparation Checklist
 
@@ -57,7 +57,7 @@ Primary secure reference is `main`. Current `dev` branch is workshop index and d
    - vulnerable branch
    - staged fix branches
    - fix-and-rescan teaching loop
-10. Optionally move into the CI/CD lab in [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md) for fork-based Actions, Docker Hub publish, local DAST, and report collection.
+10. Optionally move into the CI/CD lab section below for fork-based Actions, Docker Hub publish, local DAST, and report collection.
 
 ## SAST Demo Section
 
@@ -165,7 +165,6 @@ Current GitHub Actions gate behavior:
 
 For the live CI/CD module:
 
-- use [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md) as the primary script
 - start participants from upstream branch `workshop/ci-seed`, not directly from `main`
 - run SonarQube locally and expose it through a temporary tunnel for GitHub-hosted runners
 - have participants work in forks so their Actions runs and Docker Hub credentials stay isolated

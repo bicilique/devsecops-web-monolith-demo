@@ -20,7 +20,7 @@ MiniCart Admin exists to support full-day DevSecOps workshop flow:
 
 Live delivery runbook:
 
-- [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md)
+- [WORKSHOP_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/WORKSHOP_GUIDE.md)
 
 ## Architecture Overview
 
@@ -325,7 +325,6 @@ CI/CD workshop path:
 
 - [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md)
 - [WORKSHOP_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/WORKSHOP_GUIDE.md)
-- [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md)
 - [MiniCart_Admin_8_Phase_Roadmap_Fresh.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/MiniCart_Admin_8_Phase_Roadmap_Fresh.md)
 - [CONTEXT.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/CONTEXT.md)
 
