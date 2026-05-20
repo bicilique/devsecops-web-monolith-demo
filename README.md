@@ -20,7 +20,7 @@ MiniCart Admin exists to support full-day DevSecOps workshop flow:
 
 Live delivery runbook:
 
-- [WORKSHOP_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/WORKSHOP_GUIDE.md)
+- [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md)
 
 ## Architecture Overview
 
