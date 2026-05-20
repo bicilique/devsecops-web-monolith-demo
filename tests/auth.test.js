@@ -119,6 +119,8 @@ describe('Phase 2 auth flow', () => {
     expect(dashboardResponse.res._getData()).toContain('Product count');
     expect(dashboardResponse.res._getData()).toContain('Recent audit activity');
     expect(dashboardResponse.res._getData()).toContain('published stationery spotlight');
+    // WORKSHOP_CI_DEMO: Keep this assertion paired with the dashboard spotlight sentence in src/views/dashboard.ejs.
+    expect(dashboardResponse.res._getData()).toContain('Workshop spotlight: CI/CD confidence starts with one safe small change.');
   });
 
   test('destroys session on logout', async () => {

@@ -1,6 +1,6 @@
 # Workshop Guide
 
-MiniCart Admin workshop guide for instructor and participant use. Current repo state supports secure-baseline setup, scans, CI review, secure behavior review. Lesson branches exist for vulnerable and progressive-fix training flow.
+MiniCart Admin workshop guide for instructor and participant use. Current repo state supports secure-baseline setup, scans, CI review, secure behavior review. Lesson branches exist for vulnerable and progressive-fix training flow. Use [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md) when you need the live step-by-step classroom script.
 
 ## Instructor Preparation Checklist
 
@@ -23,6 +23,8 @@ MiniCart Admin workshop guide for instructor and participant use. Current repo s
 - prepare GitHub repo secrets if demoing Actions Sonar step:
   - `SONAR_TOKEN`
   - `SONAR_HOST_URL`
+  - `DOCKERHUB_USERNAME`
+  - `DOCKERHUB_TOKEN`
 
 ## Participant Setup Checklist
 
@@ -55,6 +57,7 @@ Primary secure reference is `main`. Current `dev` branch is workshop index and d
    - vulnerable branch
    - staged fix branches
    - fix-and-rescan teaching loop
+10. Optionally move into the CI/CD lab in [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md) for fork-based Actions, Docker Hub publish, local DAST, and report collection.
 
 ## SAST Demo Section
 
@@ -156,6 +159,18 @@ Current GitHub Actions gate behavior:
 - test, coverage, Docker build, DB reset, health check -> hard fail
 - SonarQube, Trivy, ZAP findings -> soft gate by default
 - Sonar step skipped when secrets missing
+- Docker Hub push skipped when Docker Hub secrets missing or workflow runs on pull request
+
+## CI/CD Lab Notes
+
+For the live CI/CD module:
+
+- use [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md) as the primary script
+- start participants from upstream branch `workshop/ci-seed`, not directly from `main`
+- run SonarQube locally and expose it through a temporary tunnel for GitHub-hosted runners
+- have participants work in forks so their Actions runs and Docker Hub credentials stay isolated
+- use `.github/dependabot.yml` as the repository-native SCA teaching artifact
+- pull the published image locally after the workflow completes, then run ZAP outside Actions for the runtime-validation segment
 
 Discussion prompts:
 

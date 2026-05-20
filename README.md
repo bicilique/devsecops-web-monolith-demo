@@ -18,6 +18,10 @@ MiniCart Admin exists to support full-day DevSecOps workshop flow:
 - compare vulnerable and fixed training paths
 - practice remediation and rescanning
 
+Live delivery runbook:
+
+- [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md)
+
 ## Architecture Overview
 
 Current app shape:
@@ -224,13 +228,15 @@ Pipeline order:
 3. generate coverage
 4. run SonarQube scan when `SONAR_TOKEN` and `SONAR_HOST_URL` exist
 5. run Trivy filesystem scan
-6. build Docker image
-7. run Trivy image scan
-8. reset DB
-9. start app with `npm start`
-10. wait for `/health`
-11. run ZAP baseline
-12. upload reports and coverage artifacts
+6. derive Docker image tag and write `reports/published-image.txt`
+7. build Docker image
+8. run Trivy image scan
+9. push image to Docker Hub when `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` exist on a non-PR run
+10. reset DB
+11. start app with `npm start`
+12. wait for `/health`
+13. run ZAP baseline
+14. upload reports and coverage artifacts
 
 Workshop gate behavior:
 
@@ -243,6 +249,7 @@ Workflow artifacts:
 - `coverage/lcov.info`
 - `reports/trivy-fs.txt`
 - `reports/trivy-image.txt`
+- `reports/published-image.txt`
 - `reports/zap-report.html`
 - `reports/zap-report.md`
 - `reports/app.log`
@@ -253,6 +260,7 @@ Published branch roles:
 
 - `main`: secure baseline for workshop release and final comparison
 - `dev`: workshop index and active development branch
+- `workshop/ci-seed`: participant-owned CI/CD exercise starting point with pre-seeded dashboard/test edit target
 - `lesson/01-vulnerable`: intentionally vulnerable starting point
 - `lesson/02-sast-fixes`: SAST/auth fixes applied, DAST/SCA issues intentionally remain
 - `lesson/03-sca-container-fixes`: SCA/container fixes applied, DAST issues intentionally remain
@@ -300,10 +308,24 @@ git switch --detach 1bf1784
 
 See [QA_REPORT.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/QA_REPORT.md) for final release-promotion and publish evidence, including the promoted `main` release commit.
 
+CI/CD workshop path:
+
+1. fork `bicilique/devsecops-web-monolith-demo`
+2. switch to `workshop/ci-seed`
+3. create a personal exercise branch:
+   ```bash
+   git switch workshop/ci-seed
+   git switch -c workshop/ci-demo
+   ```
+4. edit the seeded dashboard sentence plus matching auth test assertion
+5. push branch and inspect GitHub Actions in the fork
+6. pull the published image from Docker Hub and run local ZAP
+
 ## Related Docs
 
 - [SECURITY.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/SECURITY.md)
 - [WORKSHOP_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/WORKSHOP_GUIDE.md)
+- [TEACHING_GUIDE.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/TEACHING_GUIDE.md)
 - [MiniCart_Admin_8_Phase_Roadmap_Fresh.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/MiniCart_Admin_8_Phase_Roadmap_Fresh.md)
 - [CONTEXT.md](/Users/balaisertifikasielektronik/IdeaProjects/Github/project/devsecops-web-monolith-demo/CONTEXT.md)
 
