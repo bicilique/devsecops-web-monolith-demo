@@ -250,3 +250,5 @@ AGENTS.md
 .agents/**
 skills-lock.json
 data/*.sqlite
+reports/**
+.scannerwork/**
