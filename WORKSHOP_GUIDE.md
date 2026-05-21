@@ -4,7 +4,7 @@ MiniCart Admin workshop guide for instructor and participant use. Current checke
 
 ## Instructor Preparation Checklist
 
-- install Node.js 20+, npm, Docker, Docker Compose
+- install Node.js 24+, npm, Docker, Docker Compose
 - clone repo
 - create `.env` from `.env.example`
 - set workshop-safe `SESSION_SECRET`
@@ -26,7 +26,7 @@ MiniCart Admin workshop guide for instructor and participant use. Current checke
 
 ## Participant Setup Checklist
 
-- install Node.js 20+, npm, Docker
+- install Node.js 24+, npm, Docker
 - clone repo
 - copy `.env.example` to `.env`
 - set `SESSION_SECRET`
@@ -45,10 +45,9 @@ Docker-only fallback for participants without local Node.js/npm:
 - clone repo
 - copy `.env.example` to `.env`
 - set `SESSION_SECRET`
-- set `ADMIN_PASSWORD`
-- run `docker compose up --build`
+- run `docker compose up -d --build`
 - open `http://localhost:3000/login`
-- sign in with username `admin` and local `ADMIN_PASSWORD`
+- sign in with username `admin` and password `lesson-01-admin123`
 
 ## Demo Flow
 

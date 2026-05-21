@@ -42,7 +42,7 @@ Key runtime paths:
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 24+
 - npm
 - Docker Desktop or Docker Engine with Compose
 
@@ -94,15 +94,15 @@ curl http://127.0.0.1:3000/health
 
 ## Run with Docker
 
-Create `.env` first so Compose can read `SESSION_SECRET` and `ADMIN_PASSWORD`.
+Create `.env` first so Compose can read `SESSION_SECRET`.
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
 App stays at `http://localhost:3000`.
 
-Compose now handles first-run database reset and seeding inside the container when `data/minicart-admin.sqlite` does not exist, so workshop participants do not need local `npm` just to start the app.
+Compose now handles first-run database reset and seeding inside the container when `data/minicart-admin.sqlite` does not exist, so workshop participants do not need local `npm` just to start the app. On this vulnerable lesson branch, Docker startup preserves the hardcoded demo password used by the lesson.
 
 Stop stack:
 
@@ -199,7 +199,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image
 
 ## OWASP ZAP Scan Instructions
 
-Start app first with `npm start` or `docker compose up --build`, then run baseline scan:
+Start app first with `npm start` or `docker compose up -d --build`, then run baseline scan:
 
 ```bash
 docker run --rm --network=host -v "$PWD/reports:/zap/wrk/:rw" ghcr.io/zaproxy/zaproxy:stable \
