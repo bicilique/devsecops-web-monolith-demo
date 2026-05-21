@@ -41,6 +41,17 @@ MiniCart Admin workshop guide for instructor and participant use. Current repo s
   - username `admin`
   - password = local `ADMIN_PASSWORD`
 
+Docker-only fallback for participants without local Node.js/npm:
+
+- install Docker and Docker Compose
+- clone repo
+- copy `.env.example` to `.env`
+- set `SESSION_SECRET`
+- set `ADMIN_PASSWORD`
+- run `docker compose up --build`
+- open `http://localhost:3000/login`
+- sign in with username `admin` and local `ADMIN_PASSWORD`
+
 ## Demo Flow
 
 Primary secure reference is `main`. Current `dev` branch is workshop index and day-to-day change branch.

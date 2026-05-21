@@ -98,13 +98,15 @@ curl http://127.0.0.1:3000/health
 
 ## Run with Docker
 
-Create `.env` first so Compose can read `SESSION_SECRET`.
+Create `.env` first so Compose can read `SESSION_SECRET` and `ADMIN_PASSWORD`.
 
 ```bash
 docker compose up --build
 ```
 
 App stays at `http://localhost:3000`.
+
+Compose now handles first-run database reset and seeding inside the container when `data/minicart-admin.sqlite` does not exist, so workshop participants do not need local `npm` just to start the app.
 
 Stop stack:
 
