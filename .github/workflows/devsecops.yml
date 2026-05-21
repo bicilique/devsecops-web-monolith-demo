@@ -7,10 +7,14 @@ on:
 jobs:
   devsecops:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
+
     env:
-      IMAGE_NAME: minicart-admin
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,37 +43,19 @@ jobs:
           ADMIN_PASSWORD: ci-admin-password
         run: npm run test:coverage
 
-      - name: Derive Docker image tags
-        id: image_meta
-        run: |
-          REPO_OWNER="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
-          BRANCH_SLUG="$(echo "${GITHUB_REF_NAME}" | tr '/_' '--' | tr -cd '[:alnum:]-' | tr '[:upper:]' '[:lower:]')"
-          SHORT_SHA="${GITHUB_SHA::7}"
-          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
-            IMAGE_REPO="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}"
-          else
-            IMAGE_REPO="${REPO_OWNER}/${IMAGE_NAME}"
-          fi
-          IMAGE_TAG="${BRANCH_SLUG}-${SHORT_SHA}"
-          IMAGE_REF="${IMAGE_REPO}:${IMAGE_TAG}"
-          echo "image_repo=${IMAGE_REPO}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "image_ref=${IMAGE_REF}" >> "$GITHUB_OUTPUT"
-          echo "${IMAGE_REF}" > reports/published-image.txt
-
       - name: Run SonarQube scan
-        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' }}
         uses: SonarSource/sonarqube-scan-action@v5
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
       - name: Skip SonarQube scan when secrets are missing
-        if: ${{ secrets.SONAR_TOKEN == '' || secrets.SONAR_HOST_URL == '' }}
+        if: ${{ env.SONAR_TOKEN == '' || env.SONAR_HOST_URL == '' }}
         run: echo "Skipping SonarQube scan because SONAR_TOKEN or SONAR_HOST_URL is not configured."
 
       - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.70.0
         continue-on-error: true
         with:
           scan-type: fs
@@ -80,34 +66,19 @@ jobs:
           ignore-unfixed: true
           vuln-type: os,library
 
-      - name: Log in to Docker Hub
-        if: ${{ github.event_name != 'pull_request' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build Docker image
-        run: docker build -t "${{ steps.image_meta.outputs.image_ref }}" .
+        run: docker build -t minicart-admin:ci .
 
       - name: Run Trivy image scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.35.0
         continue-on-error: true
         with:
-          image-ref: ${{ steps.image_meta.outputs.image_ref }}
+          image-ref: minicart-admin:ci
           format: table
           output: reports/trivy-image.txt
           exit-code: 0
           ignore-unfixed: true
           vuln-type: os,library
-
-      - name: Push Docker image
-        if: ${{ github.event_name != 'pull_request' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
-        run: docker push "${{ steps.image_meta.outputs.image_ref }}"
-
-      - name: Skip Docker Hub push when secrets are missing
-        if: ${{ github.event_name != 'pull_request' && (secrets.DOCKERHUB_USERNAME == '' || secrets.DOCKERHUB_TOKEN == '') }}
-        run: echo "Skipping Docker Hub push because DOCKERHUB_USERNAME or DOCKERHUB_TOKEN is not configured."
 
       - name: Reset CI database
         env:
@@ -163,4 +134,3 @@ jobs:
             reports/zap-report.html
             reports/zap-report.md
             reports/app.log
-            reports/published-image.txt
