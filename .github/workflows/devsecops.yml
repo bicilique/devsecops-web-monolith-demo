@@ -70,7 +70,7 @@ jobs:
         run: docker build -t minicart-admin:ci .
 
       - name: Run Trivy image scan
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy@v0.70.0
         continue-on-error: true
         with:
           image-ref: minicart-admin:ci
