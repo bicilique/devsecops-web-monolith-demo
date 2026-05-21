@@ -1,11 +1,16 @@
 services:
   app:
     build: .
+    command: >
+      sh -c "if [ ! -f /app/data/minicart-admin.sqlite ]; then
+        npm run db:reset;
+      fi && npm start"
     ports:
       - "3000:3000"
     environment:
       PORT: 3000
       SQLITE_DB_PATH: /app/data/minicart-admin.sqlite
       SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     volumes:
       - ./data:/app/data
