@@ -76,11 +76,14 @@ describe('Phase 2 database scripts', () => {
   });
 
   test('db:seed fails without admin password env', () => {
+    const envWithoutAdminPassword = { ...process.env };
+    delete envWithoutAdminPassword.ADMIN_PASSWORD;
+
     expect(() =>
       execFileSync('node', ['scripts/seed-db.js'], {
         cwd: process.cwd(),
         env: {
-          ...process.env,
+          ...envWithoutAdminPassword,
           SQLITE_DB_PATH: dbPath,
           SESSION_SECRET: 'phase2-test-secret'
         },
