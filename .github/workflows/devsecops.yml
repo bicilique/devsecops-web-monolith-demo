@@ -55,7 +55,7 @@ jobs:
         run: echo "Skipping SonarQube scan because SONAR_TOKEN or SONAR_HOST_URL is not configured."
 
       - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@v0.70.0
+        uses: aquasecurity/trivy@v0.70.0
         continue-on-error: true
         with:
           scan-type: fs
