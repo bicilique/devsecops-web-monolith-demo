@@ -38,7 +38,7 @@ jobs:
       # Checkout full Git history.
       # fetch-depth: 0 helps SonarQube analyze blame/history correctly.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
