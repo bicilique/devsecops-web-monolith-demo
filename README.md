@@ -42,7 +42,7 @@ Key runtime paths:
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 24+
 - npm
 - Docker Desktop or Docker Engine with Compose
 
@@ -97,7 +97,7 @@ curl http://127.0.0.1:3000/health
 Create `.env` first so Compose can read `SESSION_SECRET` and `ADMIN_PASSWORD`.
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
 App stays at `http://localhost:3000`.
@@ -199,7 +199,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image
 
 ## OWASP ZAP Scan Instructions
 
-Start app first with `npm start` or `docker compose up --build`, then run baseline scan:
+Start app first with `npm start` or `docker compose up -d --build`, then run baseline scan:
 
 ```bash
 docker run --rm --network=host -v "$PWD/reports:/zap/wrk/:rw" ghcr.io/zaproxy/zaproxy:stable \
@@ -283,7 +283,7 @@ Use current `dev` as fixed reference branch. Use `lesson/*` branches for worksho
 `SESSION_SECRET is required.`
 
 - set `SESSION_SECRET` in `.env`
-- restart `npm start`, `npm run dev`, or `docker compose up --build`
+- restart `npm start`, `npm run dev`, or `docker compose up -d --build`
 
 `ADMIN_PASSWORD is required for database seeding.`
 
