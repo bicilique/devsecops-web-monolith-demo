@@ -10,42 +10,83 @@ jobs:
 
     permissions:
       contents: read
+      security-events: write
 
     env:
+      # Application image name for local CI build
+      IMAGE_NAME: minicart-admin
+
+      # Docker Hub image name
+      # Example result: yourdockerhubusername/minicart-admin
+      DOCKERHUB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/minicart-admin
+
+      # SonarQube configuration
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
+      # Security gate mode:
+      # report = generate security reports but do not fail pipeline
+      # gate   = fail pipeline when HIGH/CRITICAL issues are found
+      SECURITY_GATE_MODE: report
+
     steps:
+      # Checkout full Git history.
+      # fetch-depth: 0 is important for better SonarQube analysis/blame information.
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # Setup Node.js runtime for CI.
+      # Node 24 is used because this project targets Node.js 24.
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
+      # Central place for all generated security and runtime reports.
       - name: Create reports directory
         run: mkdir -p reports
 
+      # npm ci is preferred in CI because it uses package-lock.json
+      # and creates more reproducible builds than npm install.
       - name: Install dependencies
         run: npm ci
 
+      # Run unit/integration tests before security checks.
+      # Security scanning is more useful when the application is already buildable/testable.
       - name: Run test suite
         env:
           SESSION_SECRET: ci-session-secret
           ADMIN_PASSWORD: ci-admin-password
         run: npm test
 
+      # Generate code coverage.
+      # SonarQube will consume coverage/lcov.info.
       - name: Generate coverage
         env:
           SESSION_SECRET: ci-session-secret
           ADMIN_PASSWORD: ci-admin-password
         run: npm run test:coverage
 
+      # Node.js dependency audit.
+      # In report mode, this does not fail the pipeline.
+      # In gate mode, high/critical dependency issues will fail the pipeline.
+      - name: Run npm audit
+        continue-on-error: ${{ env.SECURITY_GATE_MODE == 'report' }}
+        run: |
+          if [ "${SECURITY_GATE_MODE}" = "gate" ]; then
+            npm audit --audit-level=high
+          else
+            npm audit --audit-level=high --json > reports/npm-audit.json || true
+            npm audit --audit-level=high > reports/npm-audit.txt || true
+          fi
+
+      # SonarQube SAST/code quality scan.
+      # sonar.qualitygate.wait=true makes CI wait for the SonarQube Quality Gate result.
+      # This is the difference between "scan only" and "enforced quality gate".
       - name: Run SonarQube scan
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
         uses: SonarSource/sonarqube-scan-action@v5
@@ -60,14 +101,24 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=node_modules/**,src/public/uploads/**
             -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.qualitygate.wait=true
 
+      # This keeps the pipeline usable even when SonarQube secrets are not configured.
+      # Useful for class/demo environment.
       - name: Skip SonarQube scan when secrets are missing
         if: ${{ env.SONAR_TOKEN == '' || env.SONAR_HOST_URL == '' || env.SONAR_PROJECT_KEY == '' }}
         run: echo "Skipping SonarQube scan because SONAR_TOKEN, SONAR_HOST_URL, or SONAR_PROJECT_KEY is not configured."
 
-      - name: Run Trivy filesystem scan
-        continue-on-error: true
+      # Trivy filesystem scan checks application dependencies and files.
+      # This produces a human-readable table report.
+      - name: Run Trivy filesystem scan - table report
+        continue-on-error: ${{ env.SECURITY_GATE_MODE == 'report' }}
         run: |
+          EXIT_CODE=0
+          if [ "${SECURITY_GATE_MODE}" = "gate" ]; then
+            EXIT_CODE=1
+          fi
+
           docker run --rm \
             -v "$PWD:/work" \
             -v "$PWD/reports:/reports" \
@@ -75,26 +126,84 @@ jobs:
             aquasec/trivy fs . \
               --format table \
               --output /reports/trivy-fs.txt \
-              --exit-code 0 \
+              --exit-code "$EXIT_CODE" \
+              --severity HIGH,CRITICAL \
               --ignore-unfixed \
               --vuln-type os,library
 
-      - name: Build Docker image
-        run: docker build -t minicart-admin:ci .
+      # Trivy SARIF report.
+      # SARIF can be uploaded to GitHub Code Scanning / Security tab.
+      - name: Run Trivy filesystem scan - SARIF report
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -v "$PWD/reports:/reports" \
+            -w /work \
+            aquasec/trivy fs . \
+              --format sarif \
+              --output /reports/trivy-fs.sarif \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --vuln-type os,library
 
-      - name: Run Trivy image scan
+      # Build Docker image locally for CI scanning and optional Docker Hub push.
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:ci .
+
+      # Trivy image scan checks vulnerabilities inside the built container image.
+      - name: Run Trivy image scan - table report
+        continue-on-error: ${{ env.SECURITY_GATE_MODE == 'report' }}
+        run: |
+          EXIT_CODE=0
+          if [ "${SECURITY_GATE_MODE}" = "gate" ]; then
+            EXIT_CODE=1
+          fi
+
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD/reports:/reports" \
+            aquasec/trivy image $IMAGE_NAME:ci \
+              --format table \
+              --output /reports/trivy-image.txt \
+              --exit-code "$EXIT_CODE" \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --vuln-type os,library
+
+      # Trivy image SARIF report for GitHub Security tab.
+      - name: Run Trivy image scan - SARIF report
         continue-on-error: true
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$PWD/reports:/reports" \
-            aquasec/trivy image minicart-admin:ci \
-              --format table \
-              --output /reports/trivy-image.txt \
-              --exit-code 0 \
+            aquasec/trivy image $IMAGE_NAME:ci \
+              --format sarif \
+              --output /reports/trivy-image.sarif \
+              --severity HIGH,CRITICAL \
               --ignore-unfixed \
               --vuln-type os,library
 
+      # Upload Trivy SARIF results to GitHub Code Scanning.
+      # This makes findings visible in GitHub Security tab.
+      - name: Upload Trivy filesystem SARIF to GitHub Security
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/trivy-fs.sarif
+          category: trivy-filesystem
+
+      - name: Upload Trivy image SARIF to GitHub Security
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/trivy-image.sarif
+          category: trivy-image
+
+      # Prepare clean SQLite database for CI runtime test.
       - name: Reset CI database
         env:
           SESSION_SECRET: ci-session-secret
@@ -102,6 +211,7 @@ jobs:
           SQLITE_DB_PATH: /tmp/minicart-admin-ci.sqlite
         run: npm run db:reset
 
+      # Start the application so DAST can scan the running web app.
       - name: Start application
         env:
           PORT: 3000
@@ -112,6 +222,7 @@ jobs:
           nohup npm start > reports/app.log 2>&1 &
           echo $! > reports/app.pid
 
+      # Wait until the app is healthy before running OWASP ZAP.
       - name: Wait for health endpoint
         run: |
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
@@ -121,22 +232,38 @@ jobs:
             fi
             sleep 3
           done
+
           echo "Health check did not become ready in time." >&2
           exit 1
 
+      # OWASP ZAP baseline scan.
+      # This is a lightweight DAST scan against the running application.
+      # -I prevents ZAP warnings from failing the job, useful for demo/report mode.
       - name: Run ZAP baseline scan
-        continue-on-error: true
+        continue-on-error: ${{ env.SECURITY_GATE_MODE == 'report' }}
         run: |
-          docker run --rm \
-            --network=host \
-            -v "$PWD/reports:/zap/wrk/:rw" \
-            ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py \
-              -t http://127.0.0.1:3000/ \
-              -I \
-              -r zap-report.html \
-              -w zap-report.md
+          if [ "${SECURITY_GATE_MODE}" = "gate" ]; then
+            docker run --rm \
+              --network=host \
+              -v "$PWD/reports:/zap/wrk/:rw" \
+              ghcr.io/zaproxy/zaproxy:stable \
+              zap-baseline.py \
+                -t http://127.0.0.1:3000/ \
+                -r zap-report.html \
+                -w zap-report.md
+          else
+            docker run --rm \
+              --network=host \
+              -v "$PWD/reports:/zap/wrk/:rw" \
+              ghcr.io/zaproxy/zaproxy:stable \
+              zap-baseline.py \
+                -t http://127.0.0.1:3000/ \
+                -I \
+                -r zap-report.html \
+                -w zap-report.md
+          fi
 
+      # Always stop the app, even if previous steps fail.
       - name: Stop application
         if: always()
         run: |
@@ -144,6 +271,34 @@ jobs:
             kill "$(cat reports/app.pid)" || true
           fi
 
+      # Docker Hub login.
+      # Only run on push, not pull_request, because PRs usually should not push images.
+      - name: Login to Docker Hub
+        if: ${{ github.event_name == 'push' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Tag image for Docker Hub.
+      # latest = easy demo pull
+      # github.sha = immutable version for traceability
+      - name: Tag Docker image
+        if: ${{ github.event_name == 'push' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        run: |
+          docker tag $IMAGE_NAME:ci $DOCKERHUB_IMAGE:latest
+          docker tag $IMAGE_NAME:ci $DOCKERHUB_IMAGE:${{ github.sha }}
+
+      # Push Docker image to Docker Hub.
+      # This creates a deployable artifact after passing CI/security checks.
+      - name: Push Docker image to Docker Hub
+        if: ${{ github.event_name == 'push' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        run: |
+          docker push $DOCKERHUB_IMAGE:latest
+          docker push $DOCKERHUB_IMAGE:${{ github.sha }}
+
+      # Upload all useful CI evidence.
+      # These reports are important for DevSecOps demo and audit trail.
       - name: Upload CI artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -151,8 +306,12 @@ jobs:
           name: devsecops-reports
           path: |
             coverage/lcov.info
+            reports/npm-audit.json
+            reports/npm-audit.txt
             reports/trivy-fs.txt
+            reports/trivy-fs.sarif
             reports/trivy-image.txt
+            reports/trivy-image.sarif
             reports/zap-report.html
             reports/zap-report.md
             reports/app.log
