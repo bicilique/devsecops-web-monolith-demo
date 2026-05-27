@@ -89,7 +89,7 @@ jobs:
       # This sends analysis to SonarQube but does not wait for Quality Gate.
       - name: Run SonarQube scan - report mode
         if: ${{ env.SECURITY_GATE_MODE == 'report' && env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
@@ -106,7 +106,7 @@ jobs:
       # sonar.qualitygate.wait=true makes CI fail if Quality Gate fails.
       - name: Run SonarQube scan - gate mode
         if: ${{ env.SECURITY_GATE_MODE == 'gate' && env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
