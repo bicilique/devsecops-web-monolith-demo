@@ -2,14 +2,31 @@ name: DevSecOps Pipeline
 
 on:
   push:
+    branches:
+      - main
+      - develop
+
   pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: devsecops-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   devsecops:
+    name: DevSecOps Quality Gate
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
+      pull-requests: read
       security-events: write
 
     env:
@@ -17,26 +34,27 @@ jobs:
       IMAGE_NAME: minicart-admin
 
       # Docker Hub configuration
-      # Important:
-      # secrets cannot be checked directly inside if: expressions.
-      # So we map secrets into env first, then use env.* in if conditions.
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       DOCKERHUB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/minicart-admin
 
-      # SonarQube configuration
+      # SonarQube Server configuration
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
       # Security mode:
-      # report = generate findings/reports but do not fail CI for Trivy/ZAP/npm audit
+      # report = generate security findings/reports but do not fail CI for Trivy/ZAP/npm audit
       # gate   = fail CI when HIGH/CRITICAL findings are detected
+      #
+      # Recommendation:
+      # - Keep report for demo/training and early rollout.
+      # - Change to gate when the team is ready to enforce vulnerability blocking.
       SECURITY_GATE_MODE: report
 
     steps:
       # Checkout full Git history.
-      # fetch-depth: 0 helps SonarQube analyze blame/history correctly.
+      # fetch-depth: 0 helps SonarQube analyze blame, branches, and PR context correctly.
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -85,27 +103,19 @@ jobs:
             npm audit --audit-level=high > reports/npm-audit.txt || true
           fi
 
-      # SonarQube scan in report mode.
-      # This sends analysis to SonarQube but does not wait for Quality Gate.
-      - name: Run SonarQube scan - report mode
-        if: ${{ env.SECURITY_GATE_MODE == 'report' && env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
-        with:
-          args: >
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.exclusions=node_modules/**,src/public/uploads/**
-            -Dsonar.sourceEncoding=UTF-8
-
-      # SonarQube scan in gate mode.
-      # sonar.qualitygate.wait=true makes CI fail if Quality Gate fails.
-      - name: Run SonarQube scan - gate mode
-        if: ${{ env.SECURITY_GATE_MODE == 'gate' && env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
+      # SonarQube Developer Edition:
+      # - On pull_request: runs Pull Request Analysis.
+      # - On push to main/develop: runs Branch Analysis.
+      #
+      # PR Decoration requirements:
+      # 1. SonarQube project must be bound to GitHub repository.
+      # 2. SonarQube GitHub App must be installed/configured.
+      # 3. SONAR_TOKEN, SONAR_HOST_URL, and SONAR_PROJECT_KEY must exist in GitHub Secrets.
+      #
+      # sonar.qualitygate.wait=true makes this job fail when the SonarQube Quality Gate fails.
+      # The failed status will appear in GitHub checks, and PR decoration will show the issue summary.
+      - name: Run SonarQube scan and wait for Quality Gate
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
@@ -119,6 +129,7 @@ jobs:
             -Dsonar.exclusions=node_modules/**,src/public/uploads/**
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
 
       # Keep pipeline usable when SonarQube secrets are missing.
       - name: Skip SonarQube scan when secrets are missing
@@ -135,33 +146,14 @@ jobs:
             EXIT_CODE=1
           fi
 
-          docker run --rm \
-            -v "$PWD:/work" \
-            -v "$PWD/reports:/reports" \
-            -w /work \
-            aquasec/trivy fs . \
-              --format table \
-              --output /reports/trivy-fs.txt \
-              --exit-code "$EXIT_CODE" \
-              --severity HIGH,CRITICAL \
-              --ignore-unfixed \
-              --vuln-type os,library
+          docker run --rm             -v "$PWD:/work"             -v "$PWD/reports:/reports"             -w /work             aquasec/trivy fs .               --format table               --output /reports/trivy-fs.txt               --exit-code "$EXIT_CODE"               --severity HIGH,CRITICAL               --ignore-unfixed               --vuln-type os,library
 
       # Trivy filesystem SARIF report.
       # SARIF can be uploaded into GitHub Security / Code Scanning.
       - name: Run Trivy filesystem scan - SARIF report
         continue-on-error: true
         run: |
-          docker run --rm \
-            -v "$PWD:/work" \
-            -v "$PWD/reports:/reports" \
-            -w /work \
-            aquasec/trivy fs . \
-              --format sarif \
-              --output /reports/trivy-fs.sarif \
-              --severity HIGH,CRITICAL \
-              --ignore-unfixed \
-              --vuln-type os,library
+          docker run --rm             -v "$PWD:/work"             -v "$PWD/reports:/reports"             -w /work             aquasec/trivy fs .               --format sarif               --output /reports/trivy-fs.sarif               --severity HIGH,CRITICAL               --ignore-unfixed               --vuln-type os,library
 
       # Build Docker image.
       - name: Build Docker image
@@ -177,30 +169,13 @@ jobs:
             EXIT_CODE=1
           fi
 
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$PWD/reports:/reports" \
-            aquasec/trivy image $IMAGE_NAME:ci \
-              --format table \
-              --output /reports/trivy-image.txt \
-              --exit-code "$EXIT_CODE" \
-              --severity HIGH,CRITICAL \
-              --ignore-unfixed \
-              --vuln-type os,library
+          docker run --rm             -v /var/run/docker.sock:/var/run/docker.sock             -v "$PWD/reports:/reports"             aquasec/trivy image $IMAGE_NAME:ci               --format table               --output /reports/trivy-image.txt               --exit-code "$EXIT_CODE"               --severity HIGH,CRITICAL               --ignore-unfixed               --vuln-type os,library
 
       # Trivy image SARIF report.
       - name: Run Trivy image scan - SARIF report
         continue-on-error: true
         run: |
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$PWD/reports:/reports" \
-            aquasec/trivy image $IMAGE_NAME:ci \
-              --format sarif \
-              --output /reports/trivy-image.sarif \
-              --severity HIGH,CRITICAL \
-              --ignore-unfixed \
-              --vuln-type os,library
+          docker run --rm             -v /var/run/docker.sock:/var/run/docker.sock             -v "$PWD/reports:/reports"             aquasec/trivy image $IMAGE_NAME:ci               --format sarif               --output /reports/trivy-image.sarif               --severity HIGH,CRITICAL               --ignore-unfixed               --vuln-type os,library
 
       # Upload Trivy filesystem SARIF to GitHub Security tab.
       # continue-on-error is used because Code Scanning may not be enabled
@@ -262,24 +237,9 @@ jobs:
         continue-on-error: ${{ env.SECURITY_GATE_MODE == 'report' }}
         run: |
           if [ "${SECURITY_GATE_MODE}" = "gate" ]; then
-            docker run --rm \
-              --network=host \
-              -v "$PWD/reports:/zap/wrk/:rw" \
-              ghcr.io/zaproxy/zaproxy:stable \
-              zap-baseline.py \
-                -t http://127.0.0.1:3000/ \
-                -r zap-report.html \
-                -w zap-report.md
+            docker run --rm               --network=host               -v "$PWD/reports:/zap/wrk/:rw"               ghcr.io/zaproxy/zaproxy:stable               zap-baseline.py                 -t http://127.0.0.1:3000/                 -r zap-report.html                 -w zap-report.md
           else
-            docker run --rm \
-              --network=host \
-              -v "$PWD/reports:/zap/wrk/:rw" \
-              ghcr.io/zaproxy/zaproxy:stable \
-              zap-baseline.py \
-                -t http://127.0.0.1:3000/ \
-                -I \
-                -r zap-report.html \
-                -w zap-report.md
+            docker run --rm               --network=host               -v "$PWD/reports:/zap/wrk/:rw"               ghcr.io/zaproxy/zaproxy:stable               zap-baseline.py                 -t http://127.0.0.1:3000/                 -I                 -r zap-report.html                 -w zap-report.md
           fi
 
       # Always stop the app even if scan/test failed.
@@ -291,10 +251,9 @@ jobs:
           fi
 
       # Login to Docker Hub.
-      # Only push image on push event, not pull_request.
-      # This avoids pushing images from PR validation.
+      # Only push image from main branch after merge, never from pull_request.
       - name: Login to Docker Hub
-        if: ${{ github.event_name == 'push' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
@@ -304,14 +263,14 @@ jobs:
       # latest = easy for demo/deployment
       # github.sha = immutable traceable version
       - name: Tag Docker image
-        if: ${{ github.event_name == 'push' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
         run: |
           docker tag $IMAGE_NAME:ci $DOCKERHUB_IMAGE:latest
           docker tag $IMAGE_NAME:ci $DOCKERHUB_IMAGE:${{ github.sha }}
 
       # Push Docker image to Docker Hub.
       - name: Push Docker image to Docker Hub
-        if: ${{ github.event_name == 'push' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
         run: |
           docker push $DOCKERHUB_IMAGE:latest
           docker push $DOCKERHUB_IMAGE:${{ github.sha }}
@@ -334,3 +293,4 @@ jobs:
             reports/zap-report.html
             reports/zap-report.md
             reports/app.log
+          if-no-files-found: ignore
